@@ -9,6 +9,11 @@ See:
 * Issue [1947](https://github.com/coursier/coursier/issues/1947)
 * Issue [1928](https://github.com/lihaoyi/mill/issues/928)
 
+Discussion on a workaround is [here](https://github.com/lihaoyi/mill/discussions/1105). 
+Unfortunately, this also did not work. It seems like it is not only the artifact downloads
+that may be causing problems. More specifically in version `0.5.3` _we cannot run a 
+class that is **not** marked as a main class_.   
+
 ## Launching Mill with the OpenFX modules
 
 ### Version 0.5.3
