@@ -1,17 +1,26 @@
 # Issue with using JavaFX libraries  
 
 After version `0.5.3` attempting to run a javaFX application breaks.
+See:
+
+* Issue [767](https://github.com/lihaoyi/mill/issues/767)
+* Issue [775](https://github.com/lihaoyi/mill/pull/775)  
+* Issue [759](https://github.com/lihaoyi/mill/issues/759)
+* Issue [1947](https://github.com/coursier/coursier/issues/1947)
+* Issue [1928](https://github.com/lihaoyi/mill/issues/928)
 
 ## Launching Mill with the OpenFX modules
 
 ### Version 0.5.3
 
 These execute correctly: 
-  `./mill -i javafx.run`
-  `./mill -i javafx.runMain Main`
+  * `./mill -i javafx.run`
+  * `./mill -i javafx.runMain Main`
 
 This fails:
   `./mill -i javafx.runMain helloworld.HelloWorld`
+
+with the error:
 
 ```
 Error: JavaFX runtime components are missing, and are required to run this application
@@ -44,6 +53,10 @@ javafx.resolvedIvyDeps Failed to load source dependencies
 
 ```
 
+## Adding the classifier
+
+We added a classifier automatically. In the working Mill versions we see that it makes
+no difference toi the downloaded artifacts. 
 
 ## Java Installation
 
