@@ -1,0 +1,174 @@
+
+head -n 29 0.5.0-8-52bb78
+cp 0.5.0-8-52bb78 test
+sed -i '1,29d' ./test > test.jar
+
+locate -i scala-reflect | grep -i 2.12 | grep -i jar
+file-roller /home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.5/sourcecode_2.12-0.1.5.jar
+cat millboot.sh test.jar > 0.5.0-8-52bb78
+less 0.5.0-8-52bb78
+
+./mill -i clean
+./mill -i sdk.mDoc
+
+./mill show sdk.mDoc.upstreamAssemblyClasspath
+./mill sdk.runMain srllab.TablesawBubble
+
+
+Li Haoyi @lihaoyi 12:19
+download the jar in a separate task (so it’s cached) and run os.proc(“java”, “-cp”, “...”, “mdoc.Main”).run() to launch it
+you can also rely on an environmentally installed version but more reliable to have Mill download it
+
+I have started working on a module to provide Markdown parsing like Tut but using MDoc. I have two ways to invoke the
+mdoc command: using the embedded API (https://gitlab.com/hmf/srllab/blob/test_mill/build.sc#L218) or using the CLI. I
+have used the TutModule (https://github.com/lihaoyi/mill/blob/9ba4cb69331386dfde9bac69dc2d5b22401face3/contrib/tut/src/TutModule.scala)
+as the basis for my own. My question is: what is the preferred or recommended way to do this - embedded or CLI? I am
+aware that the CLI method allows us to use any of the versions made available by MDoc. TIA
+
+Li Haoyi @lihaoyi-databricks Jul 20 10:06
+no preference
+as long as you are only executing stuff you resolve yourself (whether via requests.get to download the CLI and os.proc
+to exec, or Lib.resolveDependencies to download maven deps and Jvm.runLocal to exec) it's basically a performance
+consideration and shouldn't affect behavior there's a third choice which is Lib.resolveDependencies to download maven
+deps and Jvm.runSubprocess to execute them. Same thing and a fourth choice: just import $ivying the maven dep into the
+build.sc file and using it directly. This has the best convenience and performance but for large/complex deps raises the
+possibility of classpath conflicts whereas things isolated in subprocesses or classloaders using Jvm.runLocal basically
+never conflict
+
+Li Haoyi @lihaoyi-databricks Jul 20 10:34
+and a fourth choice: just import $ivying the maven dep into the build.sc file and using it directly. This has the best
+convenience and performance but for large/complex deps raises the possibility of classpath conflicts whereas things
+isolated in subprocesses or classloaders using Jvm.runLocal basically never conflict
+
+Example:
+https://github.com/lihaoyi/mill/blob/9ba4cb69331386dfde9bac69dc2d5b22401face3/contrib/tut/src/TutModule.scala
+
+Mdoc path
+https://github.com/scalameta/mdoc/blob/2fb7370c5d113223f35adbed26ca2e988e8c84c5/mdoc/src/main/scala/mdoc/internal/markdown/MarkdownCompiler.scala#L80
+https://github.com/scalameta/mdoc/blob/d3e21f6d39a76e0cc7bfdffa8763aada794cfe6f/mdoc/src/main/scala/mdoc/internal/cli/MdocProperties.scala#L24
+https://github.com/scalameta/mdoc/blob/df39e60a386e4f396f93503ae701e5c906c59385/mdoc/src/main/scala/mdoc/internal/cli/Context.scala#L11
+https://github.com/scalameta/mdoc/blob/dc7a4f69eba818aa7959c057b803982b7ce91421/tests/unit/src/test/scala/tests/markdown/BaseMarkdownSuite.scala#L46
+
+Mill MDoc
+https://github.com/satabin/swam/blob/master/mdoc.sc
+https://github.com/satabin/swam/blob/master/build.sc#L153-L163
+
+
+Development
+===========
+
+Issues
+----------
+
+./mill -i clean
+./mill -i sdk.mDoc
+
+
+
+Compile & Run
+-------------
+mill sdk.compile
+mill sdk.run
+mill sdk.{compile, run}
+mill --watch sdk.run
+
+mill _.compile
+
+REPL
+------
+mill -i
+mill -i sdk.console
+
+
+IntelliJ
+---------
+. mill mill.scalalib.GenIdea/idea
+. Install ammonite
+  (curl -L https://github.com/lihaoyi/Ammonite/releases/download/1.6.9/2.13-1.6.9) > amm && chmod +x ./amm
+. https://www.jetbrains.com/help/idea/work-with-scala-worksheet-and-ammonite.html
+. https://blog.jetbrains.com/scala/2018/05/07/ammonite-support/
+. Add mill libraries manually
+  . Right click on project structure root
+  . Select "Open module settings" (F4)
+  . Select modules
+  . Select mill-build
+  . Click on the required library
+  . Select copy to module library
+
+. To determine what libraries Mill has set-up for IntelliJ see
+  . ls .idea/libraries/*mill*
+    .idea/libraries/mill-main_2.12-0.5.0.jar.xml      .idea/libraries/mill-main-core_2.12-0.5.0.jar.xml        .idea/libraries/mill-scalajslib-api_2.12-0.5.0.jar.xml
+    .idea/libraries/mill-main-api_2.12-0.5.0.jar.xml  .idea/libraries/mill-main-moduledefs_2.12-0.5.0.jar.xml  .idea/libraries/mill-scalalib_2.12-0.5.0.jar.xml
+    .idea/libraries/mill-main-client-0.5.0.jar.xml    .idea/libraries/mill-scalajslib_2.12-0.5.0.jar.xml       .idea/libraries/mill-scalalib-api_2.12-0.5.0.jar.xml
+  . The mill libraries may not be auto-detected. Add them manually.
+    Running the script via IntelliJ will ail
+  . These are set-up by IntelliJ (by prompt request) when it detevts the *.sc file as a Ammonite script
+        ammonite_2_12_8_1_6_7_jar.xml
+        ammonite_interp_2_12_8_1_6_7_jar.xml
+        ammonite_ops_2_12_1_6_7_jar.xml
+        ammonite_repl_2_12_8_1_6_7_jar.xml
+        ammonite_runtime_2_12_1_6_7_jar.xml
+        ammonite_terminal_2_12_1_6_7_jar.xml
+        ammonite_util_2_12_1_6_7_jar.xml
+  . These are set-up when we use the magic ivy import
+        mdoc_2_12_1_3_1_jar.xml
+        mdoc_runtime_2_12_1_3_1_jar.xml
+
+
+
+References
+==========
+
+Docs
+------
+
+1. https://stackoverflow.com/questions/19784525/markdown-to-html-with-java-scala
+1. https://scalameta.org/mdoc/
+   1. https://scalameta.org/mdoc/blog/2019/12/30/introduction.html
+1. https://www.scala-sbt.org/sbt-site/index.html
+   1. https://github.com/sbt/sbt-site
+   1. https://www.scala-sbt.org/sbt-site/generators/laika.html
+   1. https://www.scala-sbt.org/sbt-site/preprocess.html
+1. https://github.com/planet42/Laika
+1. https://jbake.org/
+1. http://www.lihaoyi.com/Scalatex/
+1. https://github.com/lightbend/paradox/issues/81
+
+
+
+Libraries
+----------
+
+Data Wrangling
+
+1. https://github.com/pityka/saddle/
+1. https://jwork.org/home/
+1. tablesaw
+
+
+Reinforcement Learning
+
+1. https://github.com/openai/baselines
+1. https://ray.readthedocs.io/en/latest/rllib.html
+1. https://github.com/NervanaSystems/coach
+1. https://github.com/tensorforce/tensorforce
+1. https://github.com/rll/rllab
+   https://rllab.readthedocs.io/en/latest/
+1. https://github.com/keras-rl/keras-rl
+1. **http://burlap.cs.brown.edu/**
+1. http://pybrain.org/
+1. https://waxworksmath.com/Authors/N_Z/Sutton/RLAI_1st_Edition/sutton.html
+1. http://busoniu.net/files/repository/readme_approxrl.html
+1. **http://rlpark.github.io/doc_codejava_offpac.html**
+1. https://github.com/rlpy/rlpy
+
+Environments
+-------------
+
+1. https://github.com/openai/retro (was https://github.com/openai/universe)
+1. https://gym.openai.com/
+1. https://deepmind.com/blog/open-sourcing-deepmind-lab/
+1. https://deepmind.com/research/publications/deepmind-control-suite/ (https://github.com/deepmind/dm_control)
+1. https://www.microsoft.com/en-us/research/project/project-malmo/
+
+
