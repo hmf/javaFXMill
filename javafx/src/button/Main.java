@@ -1,3 +1,5 @@
+package button;
+
 /**
  *
  * ./mill mill.scalalib.GenIdea/idea
