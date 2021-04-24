@@ -23,7 +23,7 @@ These execute correctly:
   * `./mill -i javafx.runMain Main`
 
 This fails:
-  `./mill -i javafx.runMain helloworld.HelloWorld`
+  ``
 
 with the error:
 
