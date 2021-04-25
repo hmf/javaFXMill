@@ -20,7 +20,8 @@ class that is **not** marked as a main class_.
 
 These execute correctly: 
   * `./mill -i javafx.run`
-  * `./mill -i javafx.runMain Main`
+  * `./mill -i javafx.runMain helloworld.HelloWorld`
+  * `./mill -i --watch javafx.run`
 
 This fails:
   ``

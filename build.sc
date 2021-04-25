@@ -1,3 +1,6 @@
+// cSpell:ignore scalalib, helloworld, coursier, Deps, unmanaged, classpath
+// cSpell:ignore javafx, controlsfx, openjfx
+
 import mill._, scalalib._
 
 val javaFXVersion = "13.0.2"
@@ -94,14 +97,17 @@ object javafx extends JavaModule {
                "/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-web/12/javafx-web-12-linux.jar"
              )
 
-  def forkArgs = Seq(
+  def forkArgs = {
+    val unmanaged = unmanagedClasspath
+    Seq(
     //"--module-path", "/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx" + ":" + "/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/controlsfx/controlsfx/11.1.0/controlsfx-11.1.0.jar",
     "--module-path", files.mkString(":") + ":" + "/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/controlsfx/controlsfx/11.1.0/controlsfx-11.1.0.jar",
     "--add-modules", "javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,org.controlsfx.controls",
     "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
     "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls", 
     "--add-exports=javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls"
-  )
+    )
+  }
 
   /*
   def forkArgs = Seq(
