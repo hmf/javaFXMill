@@ -30,7 +30,9 @@ val controlsFXVersion = "11.1.0"
 object javafx extends JavaModule {
   override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
 
+  // OpenFX/JavaFX libraries
   private lazy val javaFXModuleNames = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
+  // Extra OpenFX library
   private lazy val controlsFXModuleName = "org.controlsfx.controls"
 
   /**
@@ -45,10 +47,8 @@ object javafx extends JavaModule {
     import coursier._
     import coursier.parse.DependencyParser
 
-    // OpenFX/JavaFX libraries
-    //val javaFXModuleNames = List("base", "controls", "fxml", "graphics", "media", "swing", "web")
     // Extra OpenFX library
-    // Coursier: only a single String literal is allowed here
+    // Coursier: only a single String literal is allowed here, so cannot decouple version
     //val controlsFXModuleName = s"org.controlsfx:controlsfx:$controlsFXVersion"
     val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
 
@@ -81,26 +81,13 @@ object javafx extends JavaModule {
                                              val t= s.toLowerCase()
                                              t.contains("javafx") || t.contains("controlsfx")
                                           }
-    println(s.items.mkString(";\n"))
     val modulesNames = javaFXModuleNames.map( m => s"javafx.$m") ++ Seq(controlsFXModuleName)
-    println(modulesNames.iterator.mkString(", "))
     Seq(
-    //"--module-path", s.iterator.mkString(":") + ":" + "/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/controlsfx/controlsfx/11.1.0/controlsfx-11.1.0.jar",
-    "--module-path", s.iterator.mkString(":"),
-    //"--add-modules", "javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,org.controlsfx.controls",
-    "--add-modules", modulesNames.iterator.mkString(","),
-    "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
-    "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls", 
-    "--add-exports=javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls"
+        "--module-path", s.iterator.mkString(":"),
+        "--add-modules", modulesNames.iterator.mkString(","),
+        "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
+        "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls",
+        "--add-exports=javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls"
     )
   }
-
-  /*
-  def forkArgs = Seq(
-    "--module-path", sys.env("JAVAFX_HOME") + ":" + "/Users/ajr/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2/org/controlsfx/controlsfx/11.1.0",
-    "--add-modules", "javafx.base,javafx.controls,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,org.controlsfx.controls",
-    "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
-    "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls", 
-    "--add-exports=javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls"
-  )*/ 
 }
