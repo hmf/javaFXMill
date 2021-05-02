@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The application shows a simple single button. When pressed thr message:
+The application shows a simple single button. When pressed the message:
 
     Hello World!
 
@@ -11,10 +11,15 @@ is written to console.
 ## Getting started
 
 Command to execute the application:
-* `./mill -i javafx.run`
-* `./mill -i javafx.runMain helloworld.HelloWorld`
-* `./mill -i --watch javafx.run`
+* `./mill -i managed.run`
+* `./mill -i managed.runMain helloworld.HelloWorld`
+* `./mill -i --watch managed.run`
 
+
+Command to execute the application:
+* `./mill -i unmanaged.run`
+* `./mill -i unmanaged.runMain helloworld.HelloWorld`
+* `./mill -i --watch unmanaged.run`
 
 # Issue with using JavaFX libraries  (historical notes)
 
