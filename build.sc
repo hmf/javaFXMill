@@ -16,15 +16,20 @@ val controlsFXVersion = "11.1.0"
 /**
  * When working with JavaFX/OpenFX in JDK 1.9 and later, the libraries are
  * not included in the JDK. They may be installed manually in the OS or
- * automatically via Mill. The latter method hss the advantage of acquiring
+ * automatically via Mill. The latter method has the advantage of acquiring
  * the paths of the libraries automatically and also setting up build the file
  * automatically. The easiest way to do this is to to use Mill's automatic
- * library dependency management (see #775# link below). Here we example the
- * use of Mill's unmanaged library dependency setup. It has the advantage
- * of being able to set-up module visibility and even overriding certain
- * modules on boot-up. This allows for example the use the TestFX for use
- * in headless UI testing.
+ * library dependency management (see #775# link below). Here we have an example
+ * of using of Mill's managed library dependency setup.
  *
+ * Note that in the case of the JavaFX libraries we must use set the JVM's
+ * parameters to include the module path and module names. Other libraries, even
+ * though provided as module may not require this. Most of the JVM parameter
+ * set-up is automatic. It also allows to set-up module visibility and even
+ * overriding certain modules on boot-up. This allows for example the use the
+ * TestFX for use in headless UI testing.
+ *
+ * Tested on Mill version:
  *  0.9.6-51-e4c838
  *
  * ./mill mill.scalalib.GenIdea/idea
@@ -34,71 +39,64 @@ val controlsFXVersion = "11.1.0"
 object javafx extends JavaModule {
   override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
 
+  /**
+   * In order to use OS specific libraries (such as JavaFX or OpenJFX), we
+   * must set-up the OS flags appropriately for Maven download via Coursier.
+   * This is only available **after** version **0.9.6** of Mill.
+   *
+   * @see https://github.com/com-lihaoyi/mill/pull/775 (commit ab4d61a)
+   * @return OS specific resolution mapping
+   */
   override def resolutionCustomizer = T.task {
     Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
   }
 
-  // https://github.com/com-lihaoyi/mill/pull/775: ab4d61a
-  // https://github.com/openjfx/samples/tree/master/IDE/IntelliJ/Non-Modular/Java
+  /**
+   * We setup JavaFX using managed libraries pretty much as any other library.
+   * However, we must use the [[resolutionCustomizer]] to ensure that the proper
+   * OS dependent libraries are correctly downloaded. In order to ise JavaFX or
+   * OpenJFX we must include these libraries in the module path and module names
+   * to the JVM parameters. We can automate this via [[forkArgs]].
+   *
+   * Here we list the dependencies via the Mill `ivy` macro (uses Coursier). We
+   * could automate this too because the naming of the libraries and models uses
+   * a consistent convention. We leave that as an exercise to the reader.
+   *
+   * Note that any dependencies are loaded automatically so no need to add
+   * all the JavaFX libraries. We have these here as an example.
+   *
+   * @return an aggregation of the dependencies
+   */
   override def ivyDeps = Agg(
-                              /*ivy"org.openjfx:javafx-base:13.0.2",
-                              ivy"org.openjfx:javafx-controls:13.0.2",
-                              ivy"org.openjfx:javafx-fxml:13.0.2",
-                              ivy"org.openjfx:javafx-graphics:13.0.2",
-                              ivy"org.openjfx:javafx-media:13.0.2",
-                              ivy"org.openjfx:javafx-swing:13.0.2",
-                              ivy"org.openjfx:javafx-web:13.0.2",*/
-                              ivy"org.openjfx:javafx-controls:13.0.2",
+                              /*ivy"org.openjfx:javafx-base:$javaFXVersion",
+                              ivy"org.openjfx:javafx-controls:$javaFXVersion",
+                              ivy"org.openjfx:javafx-fxml:$javaFXVersion",
+                              ivy"org.openjfx:javafx-graphics:$javaFXVersion",
+                              ivy"org.openjfx:javafx-media:$javaFXVersion",
+                              ivy"org.openjfx:javafx-swing:$javaFXVersion",
+                              ivy"org.openjfx:javafx-web:$javaFXVersion",*/
+                              ivy"org.openjfx:javafx-controls:$javaFXVersion",
                               ivy"org.controlsfx:controlsfx:$controlsFXVersion"
                              )
 
 
   // OpenFX/JavaFX libraries
-  private lazy val javaFXModuleNames = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
+  //private lazy val javaFXModuleNames = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
   // Extra OpenFX library
   private lazy val controlsFXModuleName = "org.controlsfx.controls"
-/*
-  /**
-   * Here we manually download the modules' jars. No need to install them
-   * separately in the OS. This allows us to determine the paths to the
-   * libraries so they can be used later. Note that this is a Mill command
-   * that is cached, so it can be called repeatedly.
-   *
-   * @return List of path references to the libraries
-   */
-  override def unmanagedClasspath: Target[Loose.Agg[PathRef]] = T{
-    import coursier._
-    import coursier.parse.DependencyParser
-
-    // Extra OpenFX library
-    // Coursier: only a single String literal is allowed here, so cannot decouple version
-    //val controlsFXModuleName = s"org.controlsfx:controlsfx:$controlsFXVersion"
-    val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
-
-    // Generate the dependencies
-    val javaFXModules = javaFXModuleNames.map(
-                            m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
-                         ) ++
-                         Seq(controlsFXModule)
-    // Check if the libraries exist and download if they don't
-    val files = Fetch().addDependencies(javaFXModules: _*).run()
-    val pathRefs = files.map(f => PathRef(os.Path(f)))
-    Agg(pathRefs : _*)
-  }
-*/
 
   /**
    * Here we setup the Java modules so that they can be loaded prior to
-   * application boot. Here we can indicate which modules are visible and
-   * even opt to substitute some of those. For example using TestFX to allow
-   * for headless testing.
+   * application boot. We can indicate which modules are visible and even opt
+   * to substitute some of those. For example using TestFX to allow for headless
+   * testing.
    *
    * @return the list of parameters for the JVM
    */
   override def forkArgs: Target[Seq[String]] = T {
-    // get the unmanaged libraries
+    // get the managed libraries
     val unmanaged: Loose.Agg[PathRef] = runClasspath()
-    // get the OpenJFX unmanaged libraries
+    // get the OpenJFX and related managed libraries
     val s: Loose.Agg[String] = unmanaged.map(_.path.toString())
                                         .filter{
                                            s =>
@@ -106,31 +104,20 @@ object javafx extends JavaModule {
                                              t.contains("javafx") || t.contains("controlsfx")
                                           }
 
-    println(s.iterator.mkString("\n"))
+    // Create the JavaFX module names (convention is amenable to automation)
     import scala.util.matching.Regex
 
+    // First get the javaFX only libraries
     val javaFXLibs = raw".*javafx-(.+?)-.*".r
-    //val rr: Option[Regex.Match] = javaFXLibs.findFirstMatchIn("javafx-1234")
-    //val rr: Option[Regex.Match] = javaFXLibs.findFirstMatchIn("javafx-controls-13.0.2.jar")
-    val rr: Option[Regex.Match] = javaFXLibs.findFirstMatchIn("/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-controls/13.0.2/javafx-controls-13.0.2.jar")
-    println( rr.map(_.groupCount) )
-    println("11111111111")
-    println( rr.map(_.group(1)) )
-    //println( rr.map(_.group(2)) )
-
-
-    // date.findFirstIn(dates).getOrElse("No date found.")
     val javaFXModules = s.iterator.map(m => javaFXLibs.findFirstMatchIn(m).map(_.group(1)) )
                       .toSet
                       .filter(_.isDefined)
                       .map(_.get)
-    //val javaFXModules = s.iterator.map(m => javaFXLibs.findFirstMatchIn(m).map(_.groupCount) )
-    println("2222222222222222222222")
-    println(javaFXModules.mkString("\n"))
+    // Now generate the module names
+    val modulesNames = javaFXModules.map( m => s"javafx.$m") ++
+                          Seq(controlsFXModuleName) // no standard convention, so add it manually
 
-    //val modulesNames = javaFXModuleNames.map( m => s"javafx.$m") //++ Seq(controlsFXModuleName)
-    val modulesNames = javaFXModules.map( m => s"javafx.$m") ++ Seq(controlsFXModuleName)
-    println(modulesNames.iterator.mkString(","))
+    // Add to the modules list
     Seq(
         "--module-path", s.iterator.mkString(":"),
         "--add-modules", modulesNames.iterator.mkString(","),

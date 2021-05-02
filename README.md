@@ -1,4 +1,22 @@
-# Issue with using JavaFX libraries  
+# Example of Mill setup of a JavaFX/OpenJFX application   
+
+## Introduction
+
+The application shows a simple single button. When pressed thr message:
+
+    Hello World!
+
+is written to console.
+
+## Getting started
+
+Command to execute the application:
+* `./mill -i javafx.run`
+* `./mill -i javafx.runMain helloworld.HelloWorld`
+* `./mill -i --watch javafx.run`
+
+
+# Issue with using JavaFX libraries  (historical notes)
 
 After version `0.5.3` attempting to run a javaFX application breaks.
 See:

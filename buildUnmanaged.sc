@@ -20,10 +20,18 @@ val controlsFXVersion = "11.1.0"
  * the paths of the libraries automatically and also setting up build the file
  * automatically. The easiest way to do this is to to use Mill's automatic
  * library dependency management (see #775# link below). Here we example the
- * use of Mill's unmanaged library dependency setup. It has the advantage
- * of being able to set-up module visibility and even overriding certain
- * modules on boot-up. This allows for example the use the TestFX for use
- * in headless UI testing.
+ * use of Mill's unmanaged library dependency setup. Any other libraries
+ * may still be used va Mill's managed library setup.
+ *
+ * Note that in the case of the JavaFX libraries we must use set the JVM's
+ * parameters to include the module path and module names. Other libraries, even
+ * though provided as module may not require this. Most of the JVM parameter
+ * set-up is automatic. It also allows to set-up module visibility and even
+ * overriding certain modules on boot-up. This allows for example the use the
+ * TestFX for use in headless UI testing.
+ *
+ * Tested on Mill version:
+ *  0.9.6-51-e4c838
  *
  * @see https://github.com/com-lihaoyi/mill/pull/775#issuecomment-826091576
  */
@@ -38,8 +46,8 @@ object javafx extends JavaModule {
   /**
    * Here we manually download the modules' jars. No need to install them
    * separately in the OS. This allows us to determine the paths to the
-   * libraries so they can be used later. Note that this is a Mill command
-   * that is cached, so it can be called repeatedly.
+   * libraries so they can be used later in the JVM parameters. Note that this
+   * is a Mill command that is cached, so it can be called repeatedly.
    *
    * @return List of path references to the libraries
    */
@@ -59,13 +67,14 @@ object javafx extends JavaModule {
                          Seq(controlsFXModule)
     // Check if the libraries exist and download if they don't
     val files = Fetch().addDependencies(javaFXModules: _*).run()
+    // Return the list f libraries
     val pathRefs = files.map(f => PathRef(os.Path(f)))
     Agg(pathRefs : _*)
   }
 
   /**
    * Here we setup the Java modules so that they can be loaded prior to
-   * application boot. Here we can indicate which modules are visible and
+   * application boot. We can indicate which modules are visible and
    * even opt to substitute some of those. For example using TestFX to allow
    * for headless testing.
    *
