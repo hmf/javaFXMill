@@ -48,7 +48,8 @@ object javafx extends JavaModule {
                               ivy"org.openjfx:javafx-media:13.0.2",
                               ivy"org.openjfx:javafx-swing:13.0.2",
                               ivy"org.openjfx:javafx-web:13.0.2",*/
-                              ivy"org.openjfx:javafx-controls:13.0.2"
+                              ivy"org.openjfx:javafx-controls:13.0.2",
+                              ivy"org.controlsfx:controlsfx:$controlsFXVersion"
                              )
 
 
@@ -108,10 +109,10 @@ object javafx extends JavaModule {
     println(s.iterator.mkString("\n"))
     import scala.util.matching.Regex
 
-    val javaFXModule = raw".*javafx-(.+?)-.*".r
-    //val rr: Option[Regex.Match] = javaFXModule.findFirstMatchIn("javafx-1234")
-    //val rr: Option[Regex.Match] = javaFXModule.findFirstMatchIn("javafx-controls-13.0.2.jar")
-    val rr: Option[Regex.Match] = javaFXModule.findFirstMatchIn("/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-controls/13.0.2/javafx-controls-13.0.2.jar")
+    val javaFXLibs = raw".*javafx-(.+?)-.*".r
+    //val rr: Option[Regex.Match] = javaFXLibs.findFirstMatchIn("javafx-1234")
+    //val rr: Option[Regex.Match] = javaFXLibs.findFirstMatchIn("javafx-controls-13.0.2.jar")
+    val rr: Option[Regex.Match] = javaFXLibs.findFirstMatchIn("/home/hmf/.cache/coursier/v1/https/repo1.maven.org/maven2/org/openjfx/javafx-controls/13.0.2/javafx-controls-13.0.2.jar")
     println( rr.map(_.groupCount) )
     println("11111111111")
     println( rr.map(_.group(1)) )
@@ -119,11 +120,16 @@ object javafx extends JavaModule {
 
 
     // date.findFirstIn(dates).getOrElse("No date found.")
-    val r = s.iterator.map(m => javaFXModule.findFirstMatchIn(m).map(_.group(1)) )
-    //val r = s.iterator.map(m => javaFXModule.findFirstMatchIn(m).map(_.groupCount) )
-    println(r.mkString("\n"))
+    val javaFXModules = s.iterator.map(m => javaFXLibs.findFirstMatchIn(m).map(_.group(1)) )
+                      .toSet
+                      .filter(_.isDefined)
+                      .map(_.get)
+    //val javaFXModules = s.iterator.map(m => javaFXLibs.findFirstMatchIn(m).map(_.groupCount) )
+    println("2222222222222222222222")
+    println(javaFXModules.mkString("\n"))
 
-    val modulesNames = javaFXModuleNames.map( m => s"javafx.$m") //++ Seq(controlsFXModuleName)
+    //val modulesNames = javaFXModuleNames.map( m => s"javafx.$m") //++ Seq(controlsFXModuleName)
+    val modulesNames = javaFXModules.map( m => s"javafx.$m") ++ Seq(controlsFXModuleName)
     println(modulesNames.iterator.mkString(","))
     Seq(
         "--module-path", s.iterator.mkString(":"),
