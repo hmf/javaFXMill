@@ -1,9 +1,10 @@
 // cSpell:ignore scalalib, helloworld, coursier, Deps, unmanaged, classpath
 // cSpell:ignore javafx, controlsfx, openjfx
 
+import coursier.core.Resolution
 import mill._
 import mill.api.Loose
-import mill.define.Target
+import mill.define.{Target, Task}
 import scalalib._
 
 //val javaFXVersion = "11.0.2"
@@ -47,7 +48,7 @@ object managed extends JavaModule {
    * @see https://github.com/com-lihaoyi/mill/pull/775 (commit ab4d61a)
    * @return OS specific resolution mapping
    */
-  override def resolutionCustomizer = T.task {
+  override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
     Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
   }
 
@@ -124,7 +125,9 @@ object managed extends JavaModule {
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls",
         "--add-exports=javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls"
-    )
+    ) ++
+      // add standard parameters
+      Seq("-Dprism.verbose = true", "-ea")
   }
 
 
@@ -200,7 +203,7 @@ object unmanaged extends JavaModule {
    */
   override def forkArgs: Target[Seq[String]] = T {
     // get the unmanaged libraries
-    val unmanaged: Loose.Agg[PathRef] = unmanagedClasspath()
+    val unmanaged: Loose.Agg[PathRef] = runClasspath() // unmanagedClasspath()
     // get the OpenJFX unmanaged libraries
     val s: Loose.Agg[String] = unmanaged.map(_.path.toString())
       .filter{
@@ -215,6 +218,8 @@ object unmanaged extends JavaModule {
       "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
       "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls",
       "--add-exports=javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls"
-    )
+    ) ++
+      // add standard parameters
+      Seq("-Dprism.verbose = true", "-ea")
   }
 }

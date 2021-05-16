@@ -1,8 +1,18 @@
+
+<!--- cSpell:ignore openfx --->
+
 # Example of Mill setup of a JavaFX/OpenJFX application   
 
 ## Introduction
 
-The application shows a simple single button. When pressed the message:
+This project shows how to set up a Mill project that uses 
+[OpenJFX (JavaFx)](https://openjfx.io/) library. More specifically it shows how 
+one needs to configure the use of the module system for JDK1.9+. Unlike other
+modules, the JavaFX cannot be used as regular JAR libraries. This means the JVM 
+parameters for the module path and module names must be used. 
+
+The example is avery simple JavaFX application shows a simple single button. When
+pressed the message:
 
     Hello World!
 
@@ -10,18 +20,49 @@ is written to console.
 
 ## Getting started
 
-Command to execute the application:
+The project has two modules: `managed`and `unmanaged` that you can find in the 
+build script `build.sc`. The `managed` module shows how to set up the modules 
+using Mill's support for managed libraries. In this case, you need only add the
+library to use, the dependent JavaFX modules will be downloaded for you. 
+
+To execute the application use any of these command:
 * `./mill -i managed.run`
 * `./mill -i managed.runMain helloworld.HelloWorld`
 * `./mill -i --watch managed.run`
 
+The `unmanaged` module requires that you list all the dependent JavaFX 
+libraries that are required. You can use both managed and unmanaged libraries
+simultaneously, so you need list those libraries you wish to use. 
 
-Command to execute the application:
+To execute the application use any of these command:
 * `./mill -i unmanaged.run`
 * `./mill -i unmanaged.runMain helloworld.HelloWorld`
 * `./mill -i --watch unmanaged.run`
 
-# Issue with using JavaFX libraries  (historical notes)
+The `build.sc` tries to automate as much of the JVM module parameters as 
+possible. However, it may be necessary to tweak those parameters according 
+to you use case. More concretely you may need to add module exports or 
+patches (a patch allows you to substitute a boot module with another drop-in 
+replacement, for example using [TestFX/Monocle](https://github.com/TestFX/Monocle)). 
+
+## Using IntelliJ
+
+To use this project in IntelliJ execute the following command:
+
+    ./mill mill.scalalib.GenIdea/idea
+
+Note that Mill has support for [Bloop](https://scalacenter.github.io/bloop/). 
+However, this needs to be set up in IntelliJ first.
+
+## Using VSCode
+
+In VSCode one need only open and import the Mill build script. Because Mill 
+supports [Bloop](https://scalacenter.github.io/bloop/), this should 
+automatically work for you provided you have installed the [Metals extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=scalameta.metals#overview).
+See also [metals-vscode in Github](https://github.com/scalameta/metals-vscode).
+
+
+# Historical notes: Issue with using JavaFX libraries
 
 After version `0.5.3` attempting to run a javaFX application breaks.
 See:
