@@ -30,6 +30,9 @@ To execute the application use any of these command:
 * `./mill -i managed.runMain helloworld.HelloWorld`
 * `./mill -i --watch managed.run`
 
+To use the IDE:
+ `./mill mill.scalalib.GenIdea/idea`
+
 The `unmanaged` module requires that you list all the dependent JavaFX 
 libraries that are required. You can use both managed and unmanaged libraries
 simultaneously, so you need list those libraries you wish to use. 
