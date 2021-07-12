@@ -142,7 +142,7 @@ object managed extends ScalaModule with JavaModule {
 
   object test extends Tests {
     //override def ivyDeps = Agg(ivyMunit)
-    
+    // sse https://github.com/com-lihaoyi/mill/issues/1406
     override def ivyDeps = Agg(ivy"org.openjfx:javafx-controls:$javaFXVersion",
                               ivy"org.controlsfx:controlsfx:$controlsFXVersion",
                               ivyMunit)
