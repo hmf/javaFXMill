@@ -141,7 +141,12 @@ object managed extends ScalaModule with JavaModule {
 
 
   object test extends Tests {
-    override def ivyDeps = Agg(ivyMunit)
+    //override def ivyDeps = Agg(ivyMunit)
+    
+    override def ivyDeps = Agg(ivy"org.openjfx:javafx-controls:$javaFXVersion",
+                              ivy"org.controlsfx:controlsfx:$controlsFXVersion",
+                              ivyMunit)
+
     // https://github.com/com-lihaoyi/mill#097---2021-05-14
     //def testFrameworks = Seq(ivyMunitInterface)
     def testFramework = ivyMunitInterface
@@ -240,7 +245,11 @@ object unmanaged extends JavaModule {
   }
 }
 
-object javafx extends JavaModule {
+
+/**
+  * Same as the `managed`target, but here we just use Java. 
+  */
+  object javafx extends JavaModule {
     override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
 
   /**
