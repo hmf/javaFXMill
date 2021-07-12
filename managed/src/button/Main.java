@@ -4,9 +4,9 @@ package button;
  *
  * ./mill mill.scalalib.GenIdea/idea
  *
- * ./mill -i javafx.runMain Main
- * ./mill -i --watch javafx.runMain Main
- * ./mill -i --watch javafx.run
+ * ./mill -i managed.run
+ * ./mill -i managed.runMain helloworld.HelloWorld
+ * ./mill -i --watch managed.run
  */
 public class Main {
 

@@ -216,7 +216,7 @@ It provides the module paths
    1. https://github.com/griffon/griffon
 1. https://github.com/basilisk-fw/basilisk (dead?)
 
-## List od JavaFX stuff
+## List of JavaFX stuff
 
 1. https://github.com/mhrimaz/AwesomeJavaFX
   
