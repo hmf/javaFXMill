@@ -2,11 +2,6 @@
 package managed
 
 // cSpell:ignore splotly, munit
-import gg.data
-import gg.map
-import gg.widget
-import gg.compiler
-import gg.Experiment4._
 
 /**
  * ./mill mill.scalalib.GenIdea/idea

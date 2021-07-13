@@ -141,9 +141,15 @@ object managed extends ScalaModule with JavaModule {
 
 
   object test extends Tests {
+
+    override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
+      Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
+    }
+    
     //override def ivyDeps = Agg(ivyMunit)
     // sse https://github.com/com-lihaoyi/mill/issues/1406
-    override def ivyDeps = Agg(ivy"org.openjfx:javafx-controls:$javaFXVersion",
+    override def ivyDeps = Agg(
+                              ivy"org.openjfx:javafx-controls:$javaFXVersion",
                               ivy"org.controlsfx:controlsfx:$controlsFXVersion",
                               ivyMunit)
 
