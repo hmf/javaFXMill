@@ -7,7 +7,7 @@ import mill.api.Loose
 import mill.define.{Target, Task}
 import scalalib._
 
-val ScalaVersion = "3.0.0"
+val ScalaVersion = "3.0.1"
 
 //val javaFXVersion = "11.0.2"
 //val javaFXVersion = "12"
@@ -32,9 +32,6 @@ val mUnitVersion = "0.7.27"
  * set-up is automatic. It also allows to set-up module visibility and even
  * overriding certain modules on boot-up. This allows for example the use the
  * TestFX for use in headless UI testing.
- *
- * Tested on Mill version:
- *  0.9.6-51-e4c838
  *
  * ./mill mill.scalalib.GenIdea/idea
  *
@@ -164,22 +161,19 @@ object managed extends ScalaModule with JavaModule {
 /**
  * When working with JavaFX/OpenFX in JDK 1.9 and later, the libraries are
  * not included in the JDK. They may be installed manually in the OS or
- * automatically via Mill. The latter method hss the advantage of acquiring
+ * automatically via Mill. The latter method has the advantage of acquiring
  * the paths of the libraries automatically and also setting up build the file
  * automatically. The easiest way to do this is to to use Mill's automatic
- * library dependency management (see #775# link below). Here we example the
+ * library dependency management (see #775# link below). Here we exemplify the
  * use of Mill's unmanaged library dependency setup. Any other libraries
- * may still be used va Mill's managed library setup.
+ * may still be used via Mill's managed library setup.
  *
- * Note that in the case of the JavaFX libraries we must use set the JVM's
+ * Note that in the case of the JavaFX libraries we must use/set the JVM's
  * parameters to include the module path and module names. Other libraries, even
  * though provided as module may not require this. Most of the JVM parameter
  * set-up is automatic. It also allows to set-up module visibility and even
  * overriding certain modules on boot-up. This allows for example the use the
  * TestFX for use in headless UI testing.
- *
- * Tested on Mill version:
- *  0.9.6-51-e4c838
  *
  * @see https://github.com/com-lihaoyi/mill/pull/775#issuecomment-826091576
  */
