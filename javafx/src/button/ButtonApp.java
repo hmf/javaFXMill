@@ -12,7 +12,7 @@ public class ButtonApp extends Application {
     }
 
     @Override public void start(Stage stage) {
-        System.out.println("STARTED!");
+        System.out.println("STARTED (java) !");
         var button = new Button("Please Click Me!");
         button.setOnAction(e -> stage.close());
         var box = new VBox();

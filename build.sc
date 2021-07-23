@@ -37,7 +37,7 @@ val mUnitVersion = "0.7.27"
  *
  * @see https://github.com/com-lihaoyi/mill/pull/775#issuecomment-826091576
  */
-object managed extends ScalaModule with JavaModule {
+object managed extends ScalaModule {
   def scalaVersion = T{ ScalaVersion }
 
   val ivyMunit = ivy"org.scalameta::munit::0.7.27"
@@ -177,7 +177,9 @@ object managed extends ScalaModule with JavaModule {
  *
  * @see https://github.com/com-lihaoyi/mill/pull/775#issuecomment-826091576
  */
-object unmanaged extends JavaModule {
+object unmanaged extends ScalaModule {
+  def scalaVersion = T{ ScalaVersion }
+
   override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
 
   // OpenFX/JavaFX libraries
