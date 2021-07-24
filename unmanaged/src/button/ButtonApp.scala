@@ -1,10 +1,10 @@
-package button;
+package button
 
-import javafx.application.Application;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
-import javafx.scene.control.Button;
+import javafx.application.Application
+import javafx.stage.Stage
+import javafx.scene.Scene
+import javafx.scene.layout.VBox
+import javafx.scene.control.Button
 
 class ButtonApp extends Application {
 
@@ -17,7 +17,7 @@ class ButtonApp extends Application {
     var scene = new Scene(box)
     stage.setScene(scene)
     stage.setTitle("Just an un-managed Scala button")
-    stage.show();
+    stage.show()
   }
 
   def launchIt():Unit={
