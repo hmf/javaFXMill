@@ -7,7 +7,7 @@ import mill.api.Loose
 import mill.define.{Target, Task}
 import scalalib._
 
-val ScalaVersion = "3.0.1"
+val ScalaVersion = "3.1.0"
 
 //val javaFXVersion = "11.0.2"
 //val javaFXVersion = "12"
