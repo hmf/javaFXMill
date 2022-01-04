@@ -7,15 +7,16 @@ import mill.api.Loose
 import mill.define.{Target, Task}
 import scalalib._
 
-val ScalaVersion = "3.0.1"
+val ScalaVersion = "3.1.0"
 
 //val javaFXVersion = "11.0.2"
 //val javaFXVersion = "12"
 //val javaFXVersion = "13.0.2"
 val javaFXVersion = "16"
 
-val controlsFXVersion = "11.1.0"
-val mUnitVersion = "0.7.27"
+val mUnitVersion         = "0.7.27"
+val controlsFXVersion    = "11.1.0"
+val hanSoloChartsVersion = "16.0.12"
 
 
 /**
@@ -81,6 +82,7 @@ trait OpenJFX extends JavaModule {
   see: https://stackoverflow.com/questions/320510/viewing-contents-of-a-jar-file
   see: https://www.baeldung.com/java-compress-and-uncompress
   see: https://github.com/srikanth-lingala/zip4j
+  see: https://mkyong.com/java/how-to-compress-files-in-zip-format/
   // List of modules (note that a single Jar may have ore than one module)
   val modules = javaFXModuleNames.map(n => n -> s"org.openjfx:javafx-$n:$javaFXVersion") // OpenFX
                                   .toMap 
@@ -90,7 +92,7 @@ trait OpenJFX extends JavaModule {
   */
 
   // TODO: after version 0.10.0 iof Mill put test in the managed/unmanaged classes
-  val ivyMunit = ivy"org.scalameta::munit::0.7.27"
+  val ivyMunit = ivy"org.scalameta::munit::$mUnitVersion"
   val ivyMunitInterface = "munit.Framework"
 
   /**
