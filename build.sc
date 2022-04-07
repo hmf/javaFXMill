@@ -7,14 +7,14 @@ import mill.api.Loose
 import mill.define.{Target, Task}
 import scalalib._
 
-val ScalaVersion = "3.1.0"
+val ScalaVersion = "3.1.1"
 
 //val javaFXVersion = "11.0.2"
 //val javaFXVersion = "12"
 //val javaFXVersion = "13.0.2"
 val javaFXVersion = "16"
 
-val mUnitVersion         = "0.7.27"
+val mUnitVersion         = "1.0.0-M3" //"0.7.27"
 val controlsFXVersion    = "11.1.0"
 val hanSoloChartsVersion = "16.0.12"
 
@@ -156,19 +156,20 @@ trait OpenJFX extends JavaModule {
   }
 
 
-  // TODO: after version 0.10.0 of Mill put test in the managed/unmanaged classes
-  object test extends Tests {
+  // // TODO: after version 0.10.0 of Mill put test in the managed/unmanaged classes
+  // object test extends Tests {
 
-    // TODO: after version 0.10.0 of Mill remove this
-    // sse https://github.com/com-lihaoyi/mill/issues/1406
-    override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
-      Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
-    }
+  //   // // TODO: after version 0.10.0 of Mill remove this
+  //   // // sse https://github.com/com-lihaoyi/mill/issues/1406
+  //   // override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
+  //   //   Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
+  //   // }
 
-    // https://github.com/com-lihaoyi/mill#097---2021-05-14
-    //def testFrameworks = Seq(ivyMunitInterface)
-    def testFramework = ivyMunitInterface
-  }
+  //   // https://github.com/com-lihaoyi/mill#097---2021-05-14
+  //   //def testFrameworks = Seq(ivyMunitInterface)
+  //   def ivyDeps = Agg(ivyMunit)
+  //   def testFramework = ivyMunitInterface
+  // }
 
 }
 
@@ -201,7 +202,10 @@ object managed extends OpenJFX with ScalaModule {
                               //ivy"${modules(CONTROLSFX_)}",
                              )
 
-
+    object test extends Tests {
+      def ivyDeps = Agg(ivyMunit)
+      def testFramework = ivyMunitInterface
+    }
 
 }
 
@@ -261,6 +265,11 @@ object unmanaged extends OpenJFX with ScalaModule {
     val pathRefs = files.map(f => PathRef(os.Path(f)))
     Agg(pathRefs : _*)
   }
+
+    object test extends Tests {
+      def ivyDeps = Agg(ivyMunit)
+      def testFramework = ivyMunitInterface
+    }
 
 }
 

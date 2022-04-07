@@ -8,8 +8,8 @@ package managed
  *
  * ./mill -i managed.test
  * ./mill -i managed.test.testLocal
- * ./mill -i managed.test splotly.PlotSpec.*
- * ./mill -i managed.test splotly.PlotSpec.test1
+ * ./mill -i managed.test managed.PlotSpec.*
+ * ./mill -i managed.test managed.PlotSpec.test1
  *
  * Extending `TestCase` to get access to `setUp`
  *
