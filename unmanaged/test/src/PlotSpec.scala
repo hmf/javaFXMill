@@ -20,7 +20,13 @@ package unmanaged
  */
 class PlotSpec extends munit.FunSuite {
 
-  test("hello") {
+  test("test_ok") {
+    val obtained = 42
+    val expected = 42
+    assertEquals(obtained, expected)
+  }
+
+  test("test_fails") {
     val obtained = 42
     val expected = 43
     assertEquals(obtained, expected)
