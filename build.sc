@@ -145,7 +145,7 @@ trait OpenJFX extends JavaModule {
 
     // Add to the modules list
     Seq(
-        "--module-path", s.iterator.mkString(":"),
+        "--module-path", s.iterator.mkString(":"), //TODO: BUG !!!! must be OS dependent 
         "--add-modules", modulesNames.iterator.mkString(","),
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls",
@@ -261,7 +261,7 @@ object unmanaged extends OpenJFX with ScalaModule {
       Seq(controlsFXModule)
     // Check if the libraries exist and download if they don't
     val files = Fetch().addDependencies(javaFXModules: _*).run()
-    // Return the list f libraries
+    // Return the list of libraries
     val pathRefs = files.map(f => PathRef(os.Path(f)))
     Agg(pathRefs : _*)
   }
