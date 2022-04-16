@@ -263,7 +263,10 @@ object unmanaged extends OpenJFX with ScalaModule {
     ) ++
       Seq(controlsFXModule)
     // Check if the libraries exist and download if they don't
-    val files = Fetch().addDependencies(javaFXModules: _*).run()
+    val files = Fetch()
+                  .addDependencies(javaFXModules: _*)
+                  .addArtifactTypes(Type.pom, Type.testJar)
+                  .run()
     // Return the list of libraries
     val pathRefs = files.map(f => PathRef(os.Path(f)))
     Agg(pathRefs : _*)
