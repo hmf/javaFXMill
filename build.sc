@@ -6,6 +6,7 @@ import mill._
 import mill.api.Loose
 import mill.define.{Target, Task}
 import scalalib._
+import java.io.File
 
 val ScalaVersion = "3.1.1"
 
@@ -107,6 +108,8 @@ trait OpenJFX extends JavaModule {
     Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
   }
 
+  val pathSeparator= File.pathSeparator
+
   /**
    * Here we setup the Java modules so that they can be loaded prior to
    * application boot. We can indicate which modules are visible and even opt
@@ -145,7 +148,7 @@ trait OpenJFX extends JavaModule {
 
     // Add to the modules list
     Seq(
-        "--module-path", s.iterator.mkString(":"), //TODO: BUG !!!! must be OS dependent 
+        "--module-path", s.iterator.mkString( pathSeparator ), 
         "--add-modules", modulesNames.iterator.mkString(","),
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls",
