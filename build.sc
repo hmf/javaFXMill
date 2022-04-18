@@ -62,14 +62,14 @@ trait OpenJFX extends JavaModule {
   val controlsFXModule = "org.controlsfx.controls"
 
   // Module libraries 
-  val BASE       = s"org.openjfx:javafx-$BASE_:$javaFXVersion"
-  val CONTROLS   = s"org.openjfx:javafx-$CONTROLS_:$javaFXVersion"
-  val FXML       = s"org.openjfx:javafx-$FXML_:$javaFXVersion"
-  val GRAPHICS   = s"org.openjfx:javafx-$GRAPHICS_:$javaFXVersion"
-  val MEDIA      = s"org.openjfx:javafx-$MEDIA_:$javaFXVersion"
-  val SWING      = s"org.openjfx:javafx-$SWING_:$javaFXVersion"
-  val WEB        = s"org.openjfx:javafx-$WEB_:$javaFXVersion"
-  val CONTROLSFX = s"org.controlsfx:$CONTROLSFX_:$controlsFXVersion"
+  val BASE       = s"org.openjfx:javafx-${BASE_}:$javaFXVersion"
+  val CONTROLS   = s"org.openjfx:javafx-${CONTROLS_}:$javaFXVersion"
+  val FXML       = s"org.openjfx:javafx-${FXML_}:$javaFXVersion"
+  val GRAPHICS   = s"org.openjfx:javafx-${GRAPHICS_}:$javaFXVersion"
+  val MEDIA      = s"org.openjfx:javafx-${MEDIA_}:$javaFXVersion"
+  val SWING      = s"org.openjfx:javafx-${SWING_}:$javaFXVersion"
+  val WEB        = s"org.openjfx:javafx-${WEB_}:$javaFXVersion"
+  val CONTROLSFX = s"org.controlsfx:${CONTROLSFX_}:$controlsFXVersion"
 
   // OpenFX/JavaFX libraries
   val javaFXModuleNames = Seq(BASE_, CONTROLS_, FXML_, GRAPHICS_, MEDIA_, SWING_, WEB_)
@@ -206,8 +206,8 @@ object managed extends OpenJFX with ScalaModule {
                              )
 
     object test extends Tests {
-      def ivyDeps = Agg(ivyMunit)
-      def testFramework = ivyMunitInterface
+      override def ivyDeps = Agg(ivyMunit)
+      override def testFramework = ivyMunitInterface
     }
 
 }
@@ -265,7 +265,7 @@ object unmanaged extends OpenJFX with ScalaModule {
     // Check if the libraries exist and download if they don't
     val files = Fetch()
                   .addDependencies(javaFXModules: _*)
-                  .addArtifactTypes(Type.pom, Type.testJar)
+                  .addArtifactTypes(Type.all)
                   .run()
     // Return the list of libraries
     val pathRefs = files.map(f => PathRef(os.Path(f)))
@@ -273,8 +273,8 @@ object unmanaged extends OpenJFX with ScalaModule {
   }
 
     object test extends Tests {
-      def ivyDeps = Agg(ivyMunit)
-      def testFramework = ivyMunitInterface
+      override def ivyDeps = Agg(ivyMunit)
+      override def testFramework = ivyMunitInterface
     }
 
 }
