@@ -247,6 +247,9 @@ object unmanaged extends OpenJFX with ScalaModule {
    * Managed libraries can also be used by overriding `ivyDeps`
    * 
    * @return List of path references to the libraries
+   * 
+   * @see https://github.com/coursier/coursier/discussions/2401
+   * @see https://github.com/com-lihaoyi/mill/discussions/1842
    */
   override def unmanagedClasspath: Target[Loose.Agg[PathRef]] = T{
     import coursier._
