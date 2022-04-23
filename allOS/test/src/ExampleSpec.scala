@@ -8,8 +8,8 @@ package managed
  *
  * ./mill -i managed.test
  * ./mill -i managed.test.testLocal
- * ./mill -i managed.test managed.PlotSpec.*
- * ./mill -i managed.test managed.PlotSpec.test1
+ * ./mill -i managed.test managed.ExampleSpec.*
+ * ./mill -i managed.test managed.ExampleSpec.test1
  *
  * Extending `TestCase` to get access to `setUp`
  *
@@ -18,7 +18,7 @@ package managed
  *
  *
  */
-class PlotSpec extends munit.FunSuite {
+class ExampleSpec extends munit.FunSuite {
 
   test("test_ok") {
     val obtained = 42

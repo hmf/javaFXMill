@@ -1,15 +1,15 @@
 /* cspell: disable-next-line */
-package unmanaged
+package managed
 
 // cSpell:ignore splotly, munit
 
 /**
  * ./mill mill.scalalib.GenIdea/idea
  *
- * ./mill -i unmanaged.test
- * ./mill -i unmanaged.test.testLocal
- * ./mill -i unmanaged.test unmanaged.PlotSpec.*
- * ./mill -i unmanaged.test unmanaged.PlotSpec.test1
+ * ./mill -i managed.test
+ * ./mill -i managed.test.testLocal
+ * ./mill -i managed.test managed.ExampleSpec.*
+ * ./mill -i managed.test managed.ExampleSpec.test1
  *
  * Extending `TestCase` to get access to `setUp`
  *
@@ -18,7 +18,7 @@ package unmanaged
  *
  *
  */
-class PlotSpec extends munit.FunSuite {
+class ExampleSpec extends munit.FunSuite {
 
   test("test_ok") {
     val obtained = 42

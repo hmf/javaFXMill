@@ -261,6 +261,79 @@ object unmanaged extends OpenJFX with ScalaModule {
     import coursier._
     import coursier.parse.DependencyParser
 
+    // Extra OpenFX library
+    // Coursier: only a single String literal is allowed here, so cannot decouple version
+    //val controlsFXModuleName = s"org.controlsfx:controlsfx:$controlsFXVersion"
+    val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
+
+    // Generate the dependencies
+    val javaFXModules = javaFXModuleNames.map(
+      m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
+    ) ++
+      Seq(controlsFXModule)
+      
+    // Check if the libraries exist and download if they don't
+    val files = Fetch()
+                  .addDependencies(javaFXModules: _*)
+                  .addArtifactTypes(Type.all)
+                  .run()
+    // Return the list of libraries
+    val pathRefs = files.map(f => PathRef(os.Path(f)))
+    Agg(pathRefs : _*)
+  }
+
+    object test extends Tests {
+      override def ivyDeps = Agg(ivyMunit)
+      override def testFramework = ivyMunitInterface
+    }
+
+}
+
+
+
+/**
+ * When working with JavaFX/OpenFX in JDK 1.9 and later, the libraries are
+ * not included in the JDK. They may be installed manually in the OS or
+ * automatically via Mill. The latter method has the advantage of acquiring
+ * the paths of the libraries automatically and also setting up build the file
+ * automatically. The easiest way to do this is to to use Mill's automatic
+ * library dependency management (see #775# link below). Here we exemplify the
+ * use of Mill's unmanaged library dependency setup. Any other libraries
+ * may still be used via Mill's managed library setup.
+ *
+ * Note that in the case of the JavaFX libraries we must use/set the JVM's
+ * parameters to include the module path and module names. Other libraries, even
+ * though provided as module may not require this. Most of the JVM parameter
+ * set-up is automatic. It also allows to set-up module visibility and even
+ * overriding certain modules on boot-up. This allows for example the use the
+ * TestFX for use in headless UI testing.
+ *
+ * @see https://github.com/com-lihaoyi/mill/pull/775#issuecomment-826091576
+ */
+object allOS extends OpenJFX with ScalaModule {
+
+
+  def scalaVersion = T{ ScalaVersion }
+
+  override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
+
+  /**
+   * Here we manually download the modules' jars. No need to install them
+   * separately in the OS. This allows us to determine the paths to the
+   * libraries so they can be used later in the JVM parameters. Note that this
+   * is a Mill command that is cached, so it can be called repeatedly.
+   *
+   * Managed libraries can also be used by overriding `ivyDeps`
+   * 
+   * @return List of path references to the libraries
+   * 
+   * @see https://github.com/coursier/coursier/discussions/2401
+   * @see https://github.com/com-lihaoyi/mill/discussions/1842
+   */
+  override def unmanagedClasspath: Target[Loose.Agg[PathRef]] = T{
+    import coursier._
+    import coursier.parse.DependencyParser
+
     import coursier.core.{Activation, Configuration, Extension, Reconciliation}
     import coursier.error.ResolutionError
     import coursier.ivy.IvyRepository
@@ -429,6 +502,7 @@ os.name -> Linux ,!
     }
 
 }
+
 
 
 /**
