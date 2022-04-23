@@ -271,74 +271,7 @@ object unmanaged extends OpenJFX with ScalaModule {
     import scala.async.Async.{async, await}
     import scala.collection.compat._
 
-    // implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
-
-    // async {
-    //   // TODO: testing
-    //   val resolve = Resolve()
-    //                   //.noMirrors
-    //                   //.withCache(cache)
-    //                   .withResolutionParams(
-    //                     ResolutionParams()
-    //                       .withOsInfo {
-    //                         Activation.Os(
-    //                           Some("x86_64"),
-    //                           Set("mac", "unix"),
-    //                           Some("mac os x"),
-    //                           Some("10.15.1")
-    //                         )
-    //                       }
-    //                       //.withJdkVersion("1.8.0_121")
-    //                   )
-
-    //   val deps = Seq(
-    //     dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
-    //     dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
-    //   )
-    //   val res = await {
-    //     resolve
-    //       .addDependencies(deps: _*)
-    //       .future()
-    //   }
-
-    //   //await(validateDependencies(res))
-
-    //   val urls = res.dependencyArtifacts().map(_._3.url).toSet
-    //   println("?????????????????????????????")
-    //   println(urls.mkString("\n,?"))
-    // }
-
-
-    // TODO: testing
-    val resolve = Resolve()
-                    //.noMirrors
-                    //.withCache(cache)
-                    .withResolutionParams(
-                      ResolutionParams()
-                        .withOsInfo {
-                          Activation.Os(
-                            Some("x86_64"),
-                            Set("mac", "unix"),
-                            Some("mac os x"),
-                            Some("10.15.1")
-                          )
-                        }
-                        //.withJdkVersion("1.8.0_121")
-                    )
-
-    val deps = Seq(
-      dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
-      dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
-    )
-    val resFiles = await {
-      resolve
-        .addDependencies(deps: _*)
-        .run()
-    }
-    val urls = resFiles.dependencyArtifacts().map(_._3.url).toSet
-    println("?????????????????????????????")
-    println(urls.mkString("\n,?"))
-    val pathRefsAll = files.map(f => PathRef(os.Path(f)))
+    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
     // Extra OpenFX library
     // Coursier: only a single String literal is allowed here, so cannot decouple version
@@ -350,6 +283,136 @@ object unmanaged extends OpenJFX with ScalaModule {
       m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
     ) ++
       Seq(controlsFXModule)
+
+    println(sys.props.toMap.mkString(" ,!\n"))
+    /*
+sun.os.patch.level -> unknown ,!
+os.arch -> amd64 ,!
+os.version -> 5.13.0-40-generic ,!
+jna.nosys -> true ,!
+os.name -> Linux ,!
+*/
+
+/*
+            .withOsInfo(coursier.core.Activation.Os.fromProperties(Map(
+              "os.name"        -> "Linux",
+              "os.arch"        -> "amd64",
+              "os.version"     -> "4.9.125",
+              "path.separator" -> ":"
+            ))))
+*/
+
+// https://github.com/coursier/coursier/blob/a213c20099dcf8df24af317479945c5f90ac5563/modules/tests/shared/src/test/scala/coursier/test/PomParsingTests.scala
+/*
+
+      val windowsOs = core.Activation.Os.fromProperties(Map(
+        "os.name"        -> "Windows 10",
+        "os.arch"        -> "amd64",
+        "os.version"     -> "10.0",
+        "path.separator" -> ";"
+      ))
+
+*/
+
+// https://github.com/coursier/coursier/blob/a213c20099dcf8df24af317479945c5f90ac5563/modules/core/shared/src/main/scala/coursier/core/Activation.scala
+
+/*
+    arch: Option[String],
+    families: Set[String],
+    name: Option[String],
+    version: Option[String]
+
+      private val standardFamilies = Set(
+      "windows",
+      "os/2",
+      "netware",
+      "mac",
+      "os/400",
+      "openvms"
+    )
+  */
+
+    val macOSx64 =Activation.Os(
+                                Some("x86_64"),       // same as amd64 or x86-64
+                                Set("mac", "unix"),
+                                Some("mac os x"),
+                                None
+                              )
+
+    val winX64 =Activation.Os(
+                                Some("x86_64"),
+                                Set("windows"),
+                                None,
+                                None
+                              )
+
+    val linuxX64 =Activation.Os(
+                                Some("x86_64"),
+                                Set("unix"),
+                                Some("linux"),
+                                None
+                              )
+
+    async {
+      // TODO: testing
+      val resolve = Resolve()
+                      //.noMirrors
+                      //.withCache(cache)
+                      // .withResolutionParams(
+                      //   ResolutionParams()
+                      //     .withOsInfo {
+                      //       Activation.Os(
+                      //         Some("x86_64"),
+                      //         Set("mac", "unix"),
+                      //         Some("mac os x"),
+                      //         Some("10.15.1")
+                      //       )
+                      //     }
+                      //     //.withJdkVersion("1.8.0_121")
+                      // )
+                      .withResolutionParams(
+                        ResolutionParams()
+                          .withOsInfo {
+                            // macOSx64
+                            // linuxX64
+                            winX64
+                          }
+                          .withOsInfo {
+                            macOSx64
+                            // linuxX64
+                            // winX64
+                          }
+                          //.withJdkVersion("1.8.0_121")
+                      )
+
+      // val deps = Seq(
+      //   dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
+      //   dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
+      // )
+      val deps = javaFXModules
+      val res = await {
+        resolve
+          .addDependencies(deps: _*)
+          .future()
+      }
+
+      //await(validateDependencies(res))
+
+      val urls = res.dependencyArtifacts().map(_._3.url).toSet
+      println("?????????????????????????????")
+      println(urls.mkString("\n,?"))
+    }
+
+    // // Extra OpenFX library
+    // // Coursier: only a single String literal is allowed here, so cannot decouple version
+    // //val controlsFXModuleName = s"org.controlsfx:controlsfx:$controlsFXVersion"
+    // val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
+
+    // // Generate the dependencies
+    // val javaFXModules = javaFXModuleNames.map(
+    //   m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
+    // ) ++
+    //   Seq(controlsFXModule)
     // Check if the libraries exist and download if they don't
     val files = Fetch()
                   .addDependencies(javaFXModules: _*)
