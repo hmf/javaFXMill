@@ -10,6 +10,10 @@ import java.io.File
 
 val ScalaVersion = "3.1.1"
 
+import $ivy.`org.scala-lang.modules::scala-async:0.10.0` 
+// libraryDependencies += "org.scala-lang.modules" %% "scala-async" % "0.10.0"
+// libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
+
 //val javaFXVersion = "11.0.2"
 //val javaFXVersion = "12"
 //val javaFXVersion = "13.0.2"
@@ -234,6 +238,8 @@ object managed extends OpenJFX with ScalaModule {
  * @see https://github.com/com-lihaoyi/mill/pull/775#issuecomment-826091576
  */
 object unmanaged extends OpenJFX with ScalaModule {
+
+
   def scalaVersion = T{ ScalaVersion }
 
   override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
@@ -254,6 +260,55 @@ object unmanaged extends OpenJFX with ScalaModule {
   override def unmanagedClasspath: Target[Loose.Agg[PathRef]] = T{
     import coursier._
     import coursier.parse.DependencyParser
+
+    import coursier.core.{Activation, Configuration, Extension, Reconciliation}
+    import coursier.error.ResolutionError
+    import coursier.ivy.IvyRepository
+    import coursier.params.{MavenMirror, Mirror, ResolutionParams, TreeMirror}
+    import coursier.util.ModuleMatchers
+
+
+    import scala.async.Async.{async, await}
+    import scala.collection.compat._
+
+    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
+    async {
+      // TODO: testing
+      val resolve = Resolve()
+                      //.noMirrors
+                      //.withCache(cache)
+                      .withResolutionParams(
+                        ResolutionParams()
+                          .withOsInfo {
+                            Activation.Os(
+                              Some("x86_64"),
+                              Set("mac", "unix"),
+                              Some("mac os x"),
+                              Some("10.15.1")
+                            )
+                          }
+                          //.withJdkVersion("1.8.0_121")
+                      )
+
+      val deps = Seq(
+        dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
+        dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
+      )
+      val res = await {
+        resolve
+          .addDependencies(deps: _*)
+          .future()
+      }
+
+      //await(validateDependencies(res))
+
+      val urls = res.dependencyArtifacts().map(_._3.url).toSet
+      println("?????????????????????????????")
+      println(urls.mkString("\n,?"))
+    }
+
+
 
     // Extra OpenFX library
     // Coursier: only a single String literal is allowed here, so cannot decouple version
