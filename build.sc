@@ -271,44 +271,74 @@ object unmanaged extends OpenJFX with ScalaModule {
     import scala.async.Async.{async, await}
     import scala.collection.compat._
 
-    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+    // implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-    async {
-      // TODO: testing
-      val resolve = Resolve()
-                      //.noMirrors
-                      //.withCache(cache)
-                      .withResolutionParams(
-                        ResolutionParams()
-                          .withOsInfo {
-                            Activation.Os(
-                              Some("x86_64"),
-                              Set("mac", "unix"),
-                              Some("mac os x"),
-                              Some("10.15.1")
-                            )
-                          }
-                          //.withJdkVersion("1.8.0_121")
-                      )
+    // async {
+    //   // TODO: testing
+    //   val resolve = Resolve()
+    //                   //.noMirrors
+    //                   //.withCache(cache)
+    //                   .withResolutionParams(
+    //                     ResolutionParams()
+    //                       .withOsInfo {
+    //                         Activation.Os(
+    //                           Some("x86_64"),
+    //                           Set("mac", "unix"),
+    //                           Some("mac os x"),
+    //                           Some("10.15.1")
+    //                         )
+    //                       }
+    //                       //.withJdkVersion("1.8.0_121")
+    //                   )
 
-      val deps = Seq(
-        dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
-        dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
-      )
-      val res = await {
-        resolve
-          .addDependencies(deps: _*)
-          .future()
-      }
+    //   val deps = Seq(
+    //     dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
+    //     dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
+    //   )
+    //   val res = await {
+    //     resolve
+    //       .addDependencies(deps: _*)
+    //       .future()
+    //   }
 
-      //await(validateDependencies(res))
+    //   //await(validateDependencies(res))
 
-      val urls = res.dependencyArtifacts().map(_._3.url).toSet
-      println("?????????????????????????????")
-      println(urls.mkString("\n,?"))
+    //   val urls = res.dependencyArtifacts().map(_._3.url).toSet
+    //   println("?????????????????????????????")
+    //   println(urls.mkString("\n,?"))
+    // }
+
+
+    // TODO: testing
+    val resolve = Resolve()
+                    //.noMirrors
+                    //.withCache(cache)
+                    .withResolutionParams(
+                      ResolutionParams()
+                        .withOsInfo {
+                          Activation.Os(
+                            Some("x86_64"),
+                            Set("mac", "unix"),
+                            Some("mac os x"),
+                            Some("10.15.1")
+                          )
+                        }
+                        //.withJdkVersion("1.8.0_121")
+                    )
+
+    val deps = Seq(
+      dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
+      dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
+    )
+    val resFiles = await {
+      resolve
+        .addDependencies(deps: _*)
+        .run()
     }
-
-
+    val urls = resFiles.dependencyArtifacts().map(_._3.url).toSet
+    println("?????????????????????????????")
+    println(urls.mkString("\n,?"))
+    val pathRefsAll = files.map(f => PathRef(os.Path(f)))
 
     // Extra OpenFX library
     // Coursier: only a single String literal is allowed here, so cannot decouple version
