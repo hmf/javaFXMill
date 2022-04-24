@@ -374,6 +374,8 @@ object allOS extends OpenJFX with ScalaModule {
       Seq(controlsFXModule)
 
     println(sys.props.toMap.mkString(" ,!\n"))
+    val props = sys.props.toMap
+    val osName = props("os.name")
     /*
 sun.os.patch.level -> unknown ,!
 os.arch -> amd64 ,!
@@ -431,21 +433,17 @@ os.name -> Linux ,!
     val winX64 =Activation.Os(
                                 Some("x86_64"),
                                 Set("windows"),
-                                None,
+                                Some("windows"),
                                 None
                               )
 
     val linuxX64 =Activation.Os(
                                 Some("x86_64"),
                                 Set("unix"),
-                                Some("linux"),
+                                Some("Linux"),
                                 None
                               )
 
-//    def run()(implicit ec: ExecutionContext = fetch.resolve.cache.ec): Seq[File] = {
-//      val f = fetch.io.future()
-//      Await.result(f, Duration.Inf)
-//    }
 
     // TODO: testing
     val resolveWin = Resolve()
@@ -510,34 +508,47 @@ os.name -> Linux ,!
       }
 
 
-      val urls1 = resWin.dependencyArtifacts().map(_._3.url).toSet
-      println("?????????????????????????????")
-      println(urls1.mkString("\n,?"))
-
-      val urls2 = resMac.dependencyArtifacts().map(_._3.url).toSet
-      println("?????????????????????????????")
-      println(urls2.mkString("\n,?"))
+//      val urls1 = resWin.dependencyArtifacts().map(_._3.url).toSet
+//      println("?????????????????????????????")
+//      println(urls1.mkString("\n,?"))
+//
+//      val urls2 = resMac.dependencyArtifacts().map(_._3.url).toSet
+//      println("?????????????????????????????")
+//      println(urls2.mkString("\n,?"))
     }
 
-//    val filesWin = Fetch()
-//                      .addDependencies(javaFXModules: _*)
-//                      .withResolve(resolveWin)
-//                      .addArtifactTypes(Type.all)
-//                      .run()
-//                      .toSet
-    val filesWin = Fetch().addDependencies(javaFXModules: _*)
-      .withResolutionParams( ResolutionParams().withOsInfo{ winX64 })
-      .addArtifactTypes(Type.all).run().toSet
-//    println(filesWin.mkString(", AA\n"))
+    val filesWin =
+      if (osName != winX64.name.get) {
+        Fetch()
+        .addDependencies(javaFXModules: _*)
+        .withResolutionParams( ResolutionParams().withOsInfo{ winX64 })
+        .addArtifactTypes(Type.all)
+        .run()
+        .toSet
+      } else Set()
 
-    //val filesMac = Fetch().withResolve(resolveMac).addArtifactTypes(Type.all).run().toSet
-    val filesMac = Fetch()
-      .addDependencies(javaFXModules: _*)
-      .withResolutionParams( ResolutionParams().withOsInfo{ macOSx64 })
-      .addArtifactTypes(Type.all)
-      .run()
-      .toSet
-    val allOS = filesWin ++ filesMac
+    val filesMac =
+      if (osName != macOSx64.name.get) {
+        Fetch()
+        .addDependencies(javaFXModules: _*)
+        .withResolutionParams(ResolutionParams().withOsInfo { macOSx64 })
+        .addArtifactTypes(Type.all)
+        .run()
+        .toSet
+      } else Set()
+
+    val filesLinux =
+      if (osName != linuxX64.name.get) {
+        println(s"OS NAME --------------------- $osName")
+        Fetch()
+        .addDependencies(javaFXModules: _*)
+        .withResolutionParams(ResolutionParams().withOsInfo { linuxX64 })
+        .addArtifactTypes(Type.all)
+        .run()
+        .toSet
+      } else Set()
+
+    val allOS = filesWin ++ filesMac ++ filesLinux
     println("1111111111111111111111111111111")
     println(allOS.mkString(", VV\n"))
     println("2222222222222222222222222222222 ")
