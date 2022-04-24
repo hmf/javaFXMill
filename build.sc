@@ -6,11 +6,25 @@ import mill._
 import mill.api.Loose
 import mill.define.{Target, Task}
 import scalalib._
+
 import java.io.File
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration.Duration
+import coursier.cache.{Cache, FileCache}
+import coursier.core.Publication
+import coursier.error.CoursierError
+import coursier.internal.FetchCache
+import coursier.params.{Mirror, ResolutionParams}
+import coursier.util.{Artifact, Sync, Task => CTask}
+import coursier.util.Monad.ops._
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 val ScalaVersion = "3.1.1"
 
-import $ivy.`org.scala-lang.modules::scala-async:0.10.0` 
+import $ivy.`org.scala-lang.modules::scala-async:0.10.0`
+//import $ivy.`org.scala-lang.modules:scala-async_2.12:1.0.1`
 // libraryDependencies += "org.scala-lang.modules" %% "scala-async" % "0.10.0"
 // libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
 
@@ -108,9 +122,9 @@ trait OpenJFX extends JavaModule {
    * @see https://github.com/com-lihaoyi/mill/pull/775 (commit ab4d61a)
    * @return OS specific resolution mapping
    */
-  // override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
-  //   Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
-  // }
+   override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
+     Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
+   }
 
   val pathSeparator= File.pathSeparator
 
@@ -317,6 +331,9 @@ object allOS extends OpenJFX with ScalaModule {
 
   override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
 
+  override def ivyDeps = Agg( ivy"org.scala-lang.modules:scala-async_2.12:1.0.1" )
+  //override def ivyDeps = Agg( ivy"org.scala-lang.modules::scala-async:1.0.1" )
+
   /**
    * Here we manually download the modules' jars. No need to install them
    * separately in the OS. This allows us to determine the paths to the
@@ -339,7 +356,6 @@ object allOS extends OpenJFX with ScalaModule {
     import coursier.ivy.IvyRepository
     import coursier.params.{MavenMirror, Mirror, ResolutionParams, TreeMirror}
     import coursier.util.ModuleMatchers
-
 
     import scala.async.Async.{async, await}
     import scala.collection.compat._
@@ -426,53 +442,59 @@ os.name -> Linux ,!
                                 None
                               )
 
-    async {
-      // TODO: testing
-      val resolveWin = Resolve()
-                      //.noMirrors
-                      //.withCache(cache)
-                      // .withResolutionParams(
-                      //   ResolutionParams()
-                      //     .withOsInfo {
-                      //       Activation.Os(
-                      //         Some("x86_64"),
-                      //         Set("mac", "unix"),
-                      //         Some("mac os x"),
-                      //         Some("10.15.1")
-                      //       )
-                      //     }
-                      //     //.withJdkVersion("1.8.0_121")
-                      // )
-                      .withResolutionParams(
-                        ResolutionParams()
-                          .withOsInfo {
-                            winX64
-                          }
-                          //.withJdkVersion("1.8.0_121")
-                      )
+//    def run()(implicit ec: ExecutionContext = fetch.resolve.cache.ec): Seq[File] = {
+//      val f = fetch.io.future()
+//      Await.result(f, Duration.Inf)
+//    }
 
-      val resolveMAc = Resolve()
-                      //.noMirrors
-                      //.withCache(cache)
-                      // .withResolutionParams(
-                      //   ResolutionParams()
-                      //     .withOsInfo {
-                      //       Activation.Os(
-                      //         Some("x86_64"),
-                      //         Set("mac", "unix"),
-                      //         Some("mac os x"),
-                      //         Some("10.15.1")
-                      //       )
-                      //     }
-                      //     //.withJdkVersion("1.8.0_121")
-                      // )
-                      .withResolutionParams(
-                        ResolutionParams()
-                          .withOsInfo {
-                            macOSx64
-                          }
-                          //.withJdkVersion("1.8.0_121")
-                      )
+    // TODO: testing
+    val resolveWin = Resolve()
+      //.noMirrors
+      //.withCache(cache)
+      // .withResolutionParams(
+      //   ResolutionParams()
+      //     .withOsInfo {
+      //       Activation.Os(
+      //         Some("x86_64"),
+      //         Set("mac", "unix"),
+      //         Some("mac os x"),
+      //         Some("10.15.1")
+      //       )
+      //     }
+      //     //.withJdkVersion("1.8.0_121")
+      // )
+      .withResolutionParams(
+        ResolutionParams()
+          .withOsInfo {
+            winX64
+          }
+        //.withJdkVersion("1.8.0_121")
+      )
+
+    val resolveMac = Resolve()
+      //.noMirrors
+      //.withCache(cache)
+      // .withResolutionParams(
+      //   ResolutionParams()
+      //     .withOsInfo {
+      //       Activation.Os(
+      //         Some("x86_64"),
+      //         Set("mac", "unix"),
+      //         Some("mac os x"),
+      //         Some("10.15.1")
+      //       )
+      //     }
+      //     //.withJdkVersion("1.8.0_121")
+      // )
+      .withResolutionParams(
+        ResolutionParams()
+          .withOsInfo {
+            macOSx64
+          }
+        //.withJdkVersion("1.8.0_121")
+      )
+
+    async {
 
       val deps = javaFXModules
       val resWin: Resolution = await {
@@ -482,7 +504,7 @@ os.name -> Linux ,!
       }
 
       val resMac: Resolution = await {
-        resolveWin
+        resolveMac
           .addDependencies(deps: _*)
           .future()
       }
@@ -496,6 +518,29 @@ os.name -> Linux ,!
       println("?????????????????????????????")
       println(urls2.mkString("\n,?"))
     }
+
+//    val filesWin = Fetch()
+//                      .addDependencies(javaFXModules: _*)
+//                      .withResolve(resolveWin)
+//                      .addArtifactTypes(Type.all)
+//                      .run()
+//                      .toSet
+    val filesWin = Fetch().addDependencies(javaFXModules: _*)
+      .withResolutionParams( ResolutionParams().withOsInfo{ winX64 })
+      .addArtifactTypes(Type.all).run().toSet
+//    println(filesWin.mkString(", AA\n"))
+
+    //val filesMac = Fetch().withResolve(resolveMac).addArtifactTypes(Type.all).run().toSet
+    val filesMac = Fetch()
+      .addDependencies(javaFXModules: _*)
+      .withResolutionParams( ResolutionParams().withOsInfo{ macOSx64 })
+      .addArtifactTypes(Type.all)
+      .run()
+      .toSet
+    val allOS = filesWin ++ filesMac
+    println("1111111111111111111111111111111")
+    println(allOS.mkString(", VV\n"))
+    println("2222222222222222222222222222222 ")
 
     // // Extra OpenFX library
     // // Coursier: only a single String literal is allowed here, so cannot decouple version
