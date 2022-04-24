@@ -108,9 +108,9 @@ trait OpenJFX extends JavaModule {
    * @see https://github.com/com-lihaoyi/mill/pull/775 (commit ab4d61a)
    * @return OS specific resolution mapping
    */
-  override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
-    Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
-  }
+  // override def resolutionCustomizer: Task[Option[Resolution => Resolution]] = T.task {
+  //   Some((_: coursier.core.Resolution).withOsInfo(coursier.core.Activation.Os.fromProperties(sys.props.toMap)))
+  // }
 
   val pathSeparator= File.pathSeparator
 
@@ -428,7 +428,7 @@ os.name -> Linux ,!
 
     async {
       // TODO: testing
-      val resolve = Resolve()
+      val resolveWin = Resolve()
                       //.noMirrors
                       //.withCache(cache)
                       // .withResolutionParams(
@@ -446,34 +446,55 @@ os.name -> Linux ,!
                       .withResolutionParams(
                         ResolutionParams()
                           .withOsInfo {
-                            // macOSx64
-                            // linuxX64
                             winX64
-                          }
-                          .withOsInfo {
-                            macOSx64
-                            // linuxX64
-                            // winX64
                           }
                           //.withJdkVersion("1.8.0_121")
                       )
 
-      // val deps = Seq(
-      //   dep"org.bytedeco:mkl-platform:2019.5-1.5.2",
-      //   dep"org.bytedeco:mkl-platform-redist:2019.5-1.5.2"
-      // )
+      val resolveMAc = Resolve()
+                      //.noMirrors
+                      //.withCache(cache)
+                      // .withResolutionParams(
+                      //   ResolutionParams()
+                      //     .withOsInfo {
+                      //       Activation.Os(
+                      //         Some("x86_64"),
+                      //         Set("mac", "unix"),
+                      //         Some("mac os x"),
+                      //         Some("10.15.1")
+                      //       )
+                      //     }
+                      //     //.withJdkVersion("1.8.0_121")
+                      // )
+                      .withResolutionParams(
+                        ResolutionParams()
+                          .withOsInfo {
+                            macOSx64
+                          }
+                          //.withJdkVersion("1.8.0_121")
+                      )
+
       val deps = javaFXModules
-      val res = await {
-        resolve
+      val resWin: Resolution = await {
+        resolveWin
           .addDependencies(deps: _*)
           .future()
       }
 
-      //await(validateDependencies(res))
+      val resMac: Resolution = await {
+        resolveWin
+          .addDependencies(deps: _*)
+          .future()
+      }
 
-      val urls = res.dependencyArtifacts().map(_._3.url).toSet
+
+      val urls1 = resWin.dependencyArtifacts().map(_._3.url).toSet
       println("?????????????????????????????")
-      println(urls.mkString("\n,?"))
+      println(urls1.mkString("\n,?"))
+
+      val urls2 = resMac.dependencyArtifacts().map(_._3.url).toSet
+      println("?????????????????????????????")
+      println(urls2.mkString("\n,?"))
     }
 
     // // Extra OpenFX library
