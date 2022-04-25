@@ -107,12 +107,12 @@ trait OpenJFX extends JavaModule {
   println(modules)
   */
 
-  // The osAll module downloads these OS native versons of the libraries
+  // The osAll module downloads these OS native versions of the libraries
   val supported = Set("mac", "linux", "win")
   // Get the name of the current (host) OS
   val osName = coursier.core.Activation.Os.fromProperties(sys.props.toMap).name.get.toLowerCase
   // Filter for removing incompatible native OS libraries
-  // If we have several narive libraries for diffremt OS, JavaFX cannot select the correct one
+  // If we have several native libraries for different OS, JavaFX cannot select the correct one
   val tag = osName match {
     case "linux" => "linux"
     case "mac os x" => "mac"
