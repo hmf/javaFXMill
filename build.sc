@@ -317,7 +317,7 @@ object allOS extends OpenJFX with ScalaModule {
 
   override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
 
-  override def ivyDeps = Agg( ivy"$CONTROLSFX" )
+  override def ivyDeps = Agg( ivy"$CONTROLS", ivy"$CONTROLSFX" )
 
   import coursier._
   import coursier.core.{Activation, Resolution}
