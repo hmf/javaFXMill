@@ -1,7 +1,7 @@
 // cSpell:ignore scalalib, helloworld, coursier, Deps, unmanaged, classpath
 // cSpell:ignore javafx, controlsfx, openjfx
 
-import coursier.core.Resolution
+import coursier.{Dependency, Module, ModuleName, Resolve}
 import mill._
 import mill.api.Loose
 import mill.define.{Target, Task}
@@ -11,7 +11,7 @@ import java.io.File
 import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration.Duration
 import coursier.cache.{Cache, FileCache}
-import coursier.core.Publication
+import coursier.core.Resolution
 import coursier.error.CoursierError
 import coursier.internal.FetchCache
 import coursier.params.{Mirror, ResolutionParams}
@@ -22,11 +22,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 val ScalaVersion = "3.1.1"
-
-import $ivy.`org.scala-lang.modules::scala-async:0.10.0`
-//import $ivy.`org.scala-lang.modules:scala-async_2.12:1.0.1`
-// libraryDependencies += "org.scala-lang.modules" %% "scala-async" % "0.10.0"
-// libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
 
 //val javaFXVersion = "11.0.2"
 //val javaFXVersion = "12"
@@ -331,8 +326,129 @@ object allOS extends OpenJFX with ScalaModule {
 
   override def mainClass: T[Option[String]] = Some("helloworld.HelloWorld")
 
-  override def ivyDeps = Agg( ivy"org.scala-lang.modules:scala-async_2.12:1.0.1" )
+  // TODO: remove
+  //override def ivyDeps = Agg( ivy"org.scala-lang.modules:scala-async_2.12:1.0.1" )
   //override def ivyDeps = Agg( ivy"org.scala-lang.modules::scala-async:1.0.1" )
+
+  import coursier._
+  import coursier.parse.DependencyParser
+  import coursier.core.{Activation, Publication, Resolution}
+
+  val macOSx64 =Activation.Os(
+    Some("x86_64"),       // same as amd64 or x86-64
+    Set("mac", "unix"),
+    Some("mac os x"),
+    None
+  )
+
+  /*
+
+        val windowsOs = core.Activation.Os.fromProperties(Map(
+          "os.name"        -> "Windows 10",
+          "os.arch"        -> "amd64",
+          "os.version"     -> "10.0",
+          "path.separator" -> ";"
+        ))
+
+  */
+  val winX64 =Activation.Os(
+    Some("x86_64"),
+    Set("windows"),
+    Some("windows"),
+    None
+  )
+
+  /*
+              .withOsInfo(coursier.core.Activation.Os.fromProperties(Map(
+                "os.name"        -> "Linux",
+                "os.arch"        -> "amd64",
+                "os.version"     -> "4.9.125",
+                "path.separator" -> ":"
+              ))))
+
+       OS( arch : scala.Option[_root_.scala.Predef.String],
+          families : _root_.scala.Predef.Set[_root_.scala.Predef.String],
+          name : scala.Option[_root_.scala.Predef.String],
+          version : scala.Option[_root_.scala.Predef.String]) : coursier.core.Activation.Os =
+   val current = coursier.core.Activation.Os.fromProperties(sys.props.toMap)
+   Os(Some(amd64), HashSet(unix), Some(linux), Some(5.13.0-40-generic))
+  */
+  val linuxX64 =Activation.Os(
+    Some("x86_64"),
+    Set("unix"),
+    Some("linux"),
+    None
+  )
+
+  // TODO: testing
+  val resolveWin = Resolve()
+    //.noMirrors
+    //.withCache(cache)
+    // .withResolutionParams(
+    //   ResolutionParams()
+    //     .withOsInfo {
+    //       Activation.Os(
+    //         Some("x86_64"),
+    //         Set("mac", "unix"),
+    //         Some("mac os x"),
+    //         Some("10.15.1")
+    //       )
+    //     }
+    //     //.withJdkVersion("1.8.0_121")
+    // )
+    .withResolutionParams(
+      ResolutionParams()
+        .withOsInfo {
+          winX64
+        }
+      //.withJdkVersion("1.8.0_121")
+    )
+
+  val resolveMac = Resolve()
+    //.noMirrors
+    //.withCache(cache)
+    // .withResolutionParams(
+    //   ResolutionParams()
+    //     .withOsInfo {
+    //       Activation.Os(
+    //         Some("x86_64"),
+    //         Set("mac", "unix"),
+    //         Some("mac os x"),
+    //         Some("10.15.1")
+    //       )
+    //     }
+    //     //.withJdkVersion("1.8.0_121")
+    // )
+    .withResolutionParams(
+      ResolutionParams()
+        .withOsInfo {
+          macOSx64
+        }
+      //.withJdkVersion("1.8.0_121")
+    )
+
+  val resolveLinux = Resolve()
+    //.noMirrors
+    //.withCache(cache)
+    // .withResolutionParams(
+    //   ResolutionParams()
+    //     .withOsInfo {
+    //       Activation.Os(
+    //         Some("x86_64"),
+    //         Set("mac", "unix"),
+    //         Some("mac os x"),
+    //         Some("10.15.1")
+    //       )
+    //     }
+    //     //.withJdkVersion("1.8.0_121")
+    // )
+    .withResolutionParams(
+      ResolutionParams()
+        .withOsInfo {
+          linuxX64
+        }
+      //.withJdkVersion("1.8.0_121")
+    )
 
   /**
    * Here we manually download the modules' jars. No need to install them
@@ -348,8 +464,6 @@ object allOS extends OpenJFX with ScalaModule {
    * @see https://github.com/com-lihaoyi/mill/discussions/1842
    */
   override def unmanagedClasspath: Target[Loose.Agg[PathRef]] = T{
-    import coursier._
-    import coursier.parse.DependencyParser
 
     import coursier.core.{Activation, Configuration, Extension, Reconciliation}
     import coursier.error.ResolutionError
@@ -357,10 +471,11 @@ object allOS extends OpenJFX with ScalaModule {
     import coursier.params.{MavenMirror, Mirror, ResolutionParams, TreeMirror}
     import coursier.util.ModuleMatchers
 
-    import scala.async.Async.{async, await}
-    import scala.collection.compat._
+    //implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
 
-    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+    // Get the name of the current (host) OS
+    val props = sys.props.toMap
+    val osName = props("os.name")
 
     // Extra OpenFX library
     // Coursier: only a single String literal is allowed here, so cannot decouple version
@@ -372,150 +487,6 @@ object allOS extends OpenJFX with ScalaModule {
       m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
     ) ++
       Seq(controlsFXModule)
-
-    println(sys.props.toMap.mkString(" ,!\n"))
-    val props = sys.props.toMap
-    val osName = props("os.name")
-    /*
-sun.os.patch.level -> unknown ,!
-os.arch -> amd64 ,!
-os.version -> 5.13.0-40-generic ,!
-jna.nosys -> true ,!
-os.name -> Linux ,!
-*/
-
-/*
-            .withOsInfo(coursier.core.Activation.Os.fromProperties(Map(
-              "os.name"        -> "Linux",
-              "os.arch"        -> "amd64",
-              "os.version"     -> "4.9.125",
-              "path.separator" -> ":"
-            ))))
-*/
-
-// https://github.com/coursier/coursier/blob/a213c20099dcf8df24af317479945c5f90ac5563/modules/tests/shared/src/test/scala/coursier/test/PomParsingTests.scala
-/*
-
-      val windowsOs = core.Activation.Os.fromProperties(Map(
-        "os.name"        -> "Windows 10",
-        "os.arch"        -> "amd64",
-        "os.version"     -> "10.0",
-        "path.separator" -> ";"
-      ))
-
-*/
-
-// https://github.com/coursier/coursier/blob/a213c20099dcf8df24af317479945c5f90ac5563/modules/core/shared/src/main/scala/coursier/core/Activation.scala
-
-/*
-    arch: Option[String],
-    families: Set[String],
-    name: Option[String],
-    version: Option[String]
-
-      private val standardFamilies = Set(
-      "windows",
-      "os/2",
-      "netware",
-      "mac",
-      "os/400",
-      "openvms"
-    )
-  */
-
-    val macOSx64 =Activation.Os(
-                                Some("x86_64"),       // same as amd64 or x86-64
-                                Set("mac", "unix"),
-                                Some("mac os x"),
-                                None
-                              )
-
-    val winX64 =Activation.Os(
-                                Some("x86_64"),
-                                Set("windows"),
-                                Some("windows"),
-                                None
-                              )
-
-    val linuxX64 =Activation.Os(
-                                Some("x86_64"),
-                                Set("unix"),
-                                Some("Linux"),
-                                None
-                              )
-
-
-    // TODO: testing
-    val resolveWin = Resolve()
-      //.noMirrors
-      //.withCache(cache)
-      // .withResolutionParams(
-      //   ResolutionParams()
-      //     .withOsInfo {
-      //       Activation.Os(
-      //         Some("x86_64"),
-      //         Set("mac", "unix"),
-      //         Some("mac os x"),
-      //         Some("10.15.1")
-      //       )
-      //     }
-      //     //.withJdkVersion("1.8.0_121")
-      // )
-      .withResolutionParams(
-        ResolutionParams()
-          .withOsInfo {
-            winX64
-          }
-        //.withJdkVersion("1.8.0_121")
-      )
-
-    val resolveMac = Resolve()
-      //.noMirrors
-      //.withCache(cache)
-      // .withResolutionParams(
-      //   ResolutionParams()
-      //     .withOsInfo {
-      //       Activation.Os(
-      //         Some("x86_64"),
-      //         Set("mac", "unix"),
-      //         Some("mac os x"),
-      //         Some("10.15.1")
-      //       )
-      //     }
-      //     //.withJdkVersion("1.8.0_121")
-      // )
-      .withResolutionParams(
-        ResolutionParams()
-          .withOsInfo {
-            macOSx64
-          }
-        //.withJdkVersion("1.8.0_121")
-      )
-
-    async {
-
-      val deps = javaFXModules
-      val resWin: Resolution = await {
-        resolveWin
-          .addDependencies(deps: _*)
-          .future()
-      }
-
-      val resMac: Resolution = await {
-        resolveMac
-          .addDependencies(deps: _*)
-          .future()
-      }
-
-
-//      val urls1 = resWin.dependencyArtifacts().map(_._3.url).toSet
-//      println("?????????????????????????????")
-//      println(urls1.mkString("\n,?"))
-//
-//      val urls2 = resMac.dependencyArtifacts().map(_._3.url).toSet
-//      println("?????????????????????????????")
-//      println(urls2.mkString("\n,?"))
-    }
 
     val filesWin =
       if (osName != winX64.name.get) {
@@ -539,7 +510,6 @@ os.name -> Linux ,!
 
     val filesLinux =
       if (osName != linuxX64.name.get) {
-        println(s"OS NAME --------------------- $osName")
         Fetch()
         .addDependencies(javaFXModules: _*)
         .withResolutionParams(ResolutionParams().withOsInfo { linuxX64 })
@@ -549,21 +519,7 @@ os.name -> Linux ,!
       } else Set()
 
     val allOS = filesWin ++ filesMac ++ filesLinux
-    println("1111111111111111111111111111111")
-    println(allOS.mkString(", VV\n"))
-    println("2222222222222222222222222222222 ")
 
-    // // Extra OpenFX library
-    // // Coursier: only a single String literal is allowed here, so cannot decouple version
-    // //val controlsFXModuleName = s"org.controlsfx:controlsfx:$controlsFXVersion"
-    // val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
-
-    // // Generate the dependencies
-    // val javaFXModules = javaFXModuleNames.map(
-    //   m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
-    // ) ++
-    //   Seq(controlsFXModule)
-    // Check if the libraries exist and download if they don't
     val files = Fetch()
                   .addDependencies(javaFXModules: _*)
                   .addArtifactTypes(Type.all)
@@ -573,10 +529,76 @@ os.name -> Linux ,!
     Agg(pathRefs : _*)
   }
 
-    object test extends Tests {
-      override def ivyDeps = Agg(ivyMunit)
-      override def testFramework = ivyMunitInterface
-    }
+  def osClasspath/*: Target[Loose.Agg[PathRef]]*/ = T{
+    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+
+    import scala.async.Async.{async, await}
+    import scala.collection.compat._
+
+    // Extra OpenFX library
+    // Coursier: only a single String literal is allowed here, so cannot decouple version
+    //val controlsFXModuleName = s"org.controlsfx:controlsfx:$controlsFXVersion"
+    val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
+
+    val current = coursier.core.Activation.Os.fromProperties(sys.props.toMap)
+    println(s"Curremt ---------------> $current")
+
+    // Generate the dependencies
+    val javaFXModules = javaFXModuleNames.map(
+      m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
+    ) ++
+      Seq(controlsFXModule)
+
+    val deps = javaFXModules
+    val resWin: Future[Resolution] =
+                          resolveWin
+                              .addDependencies(deps: _*)
+                              .future()
+    val resMac: Future[Resolution] =
+                          resolveMac
+                              .addDependencies(deps: _*)
+                              .future()
+    val resLinux: Future[Resolution] =
+      resolveLinux
+        .addDependencies(deps: _*)
+        .future()
+    val res = Future.sequence( List(resWin, resMac, resLinux) )
+    val result = Await.result(res, Duration.Inf)
+    val urls = result.map(_.dependencyArtifacts().map(_._3.url).toSet).reduceLeft((acc,s) => acc ++ s)
+//    println("?????????????????????????????")
+//    println(urls.mkString("\n,?"))
+
+//    val t = async {
+//      val deps = javaFXModules
+//      val resWin: Resolution = await {
+//        resolveWin
+//          .addDependencies(deps: _*)
+//          .future()
+//      }
+//      val resMac: Resolution = await {
+//        resolveMac
+//          .addDependencies(deps: _*)
+//          .future()
+//      }
+//
+//      val urls1 = resWin.dependencyArtifacts().map(_._3.url).toSet
+//      println("?????????????????????????????")
+//      println(urls1.mkString("\n,?"))
+//
+//      val urls2 = resMac.dependencyArtifacts().map(_._3.url).toSet
+//      println("?????????????????????????????")
+//      println(urls2.mkString("\n,?"))
+//
+//      urls1 ++ urls2
+//    }
+
+   urls
+  }
+
+  object test extends Tests {
+    override def ivyDeps = Agg(ivyMunit)
+    override def testFramework = ivyMunitInterface
+  }
 
 }
 
