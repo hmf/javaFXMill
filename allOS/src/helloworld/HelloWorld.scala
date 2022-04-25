@@ -14,9 +14,9 @@ import javafx.stage.Stage
  *
  * ./mill mill.scalalib.GenIdea/idea
  *
- * ./mill -i unmanaged.run
- * ./mill -i unmanaged.runMain helloworld.HelloWorld
- * ./mill -i --watch unmanaged.run
+ * ./mill -i allOS.run
+ * ./mill -i allOS.runMain helloworld.HelloWorld
+ * ./mill -i --watch allOS.run
  * 
  * @see https://stackoverflow.com/questions/12124657/getting-started-on-scala-javafx-desktop-application-development
  */

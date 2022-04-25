@@ -32,6 +32,8 @@ val mUnitVersion         = "1.0.0-M3" //"0.7.27"
 val controlsFXVersion    = "11.1.0"
 val hanSoloChartsVersion = "16.0.12"
 
+val ivyMunit = ivy"org.scalameta::munit::$mUnitVersion"
+val ivyMunitInterface = "munit.Framework"
 
 /**
  * When working with JavaFX/OpenFX in JDK 1.9 and later, the libraries are
@@ -105,9 +107,32 @@ trait OpenJFX extends JavaModule {
   println(modules)
   */
 
-  // TODO: after version 0.10.0 iof Mill put test in the managed/unmanaged classes
-  val ivyMunit = ivy"org.scalameta::munit::$mUnitVersion"
-  val ivyMunitInterface = "munit.Framework"
+  // The osAll module downloads these OS native versons of the libraries
+  val supported = Set("mac", "linux", "win")
+  // Get the name of the current (host) OS
+  val osName = coursier.core.Activation.Os.fromProperties(sys.props.toMap).name.get.toLowerCase
+  // Filter for removing incompatible native OS libraries
+  // If we have several narive libraries for diffremt OS, JavaFX cannot select the correct one
+  val tag = osName match {
+    case "linux" => "linux"
+    case "mac os x" => "mac"
+    case "windows" => "win"
+  }
+  val remove = supported - tag
+
+  def validOS(artifact: String): Boolean = {
+    if (supported.exists(s => artifact.contains(s))) {
+      // Not a native OS Jar for this OS
+      println(s"?????????????????? => $artifact")
+      //val t = remove.exists(s => artifact.contains(s))
+      val t = artifact.contains( tag )
+      println(t)
+      t
+    } else {
+      // Not a native OS Jar
+      true
+    }
+  }
 
   /**
    * In order to use OS specific libraries (such as JavaFX or OpenJFX), we
@@ -160,15 +185,17 @@ trait OpenJFX extends JavaModule {
                           Seq(controlsFXModule) // no standard convention, so add it manually
 
     // Add to the modules list
-    Seq(
-        "--module-path", s.iterator.mkString( pathSeparator ), 
-        "--add-modules", modulesNames.iterator.mkString(","),
+    val t = Seq(
+        "--module-path", s.filter( validOS ).iterator.mkString( pathSeparator ),
+        "--add-modules", modulesNames.iterator.mkString(","), // "javafx.controls,javafx.graphics,javafx.base,org.controlsfx.controls",
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
         "--add-exports=javafx.controls/com.sun.javafx.scene.control.inputmap=org.controlsfx.controls",
         "--add-exports=javafx.graphics/com.sun.javafx.scene.traversal=org.controlsfx.controls"
     ) ++
       // add standard parameters
       Seq("-Dprism.verbose = true", "-ea")
+    println(t.mkString(";\n"))
+    t
   }
 
 
@@ -276,6 +303,7 @@ object unmanaged extends OpenJFX with ScalaModule {
     val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
 
     // Generate the dependencies
+    val javaFXModuleNames = Seq( CONTROLS_ )
     val javaFXModules = javaFXModuleNames.map(
       m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
     ) ++
@@ -470,6 +498,7 @@ object allOS extends OpenJFX with ScalaModule {
     val controlsFXModule = dep"org.controlsfx:controlsfx:11.1.0"
 
     // Generate the dependencies
+    val javaFXModuleNames = Seq( CONTROLS_ )
     val javaFXModules = javaFXModuleNames.map(
       m => Dependency(Module(org"org.openjfx", ModuleName(s"javafx-$m")), javaFXVersion)
     ) ++
@@ -500,7 +529,6 @@ object allOS extends OpenJFX with ScalaModule {
     // Setup resolution Linux downloads (if not current OS)
     val filesLinux =
       if (osName != linuxX64.name.get) {
-        println(s"?????????????????????????????????????? $osName == ${linuxX64.name.get} !!!!!!!!!!!!!!!!!!!!!!!!")
         Fetch()
         .addDependencies(javaFXModules: _*)
         .withResolutionParams(ResolutionParams().withOsInfo { linuxX64 })
@@ -512,10 +540,6 @@ object allOS extends OpenJFX with ScalaModule {
     val allOS = filesWin ++ filesMac ++ filesLinux
     val files = allOS.toSeq
 
-    val filesx = Fetch()
-                  .addDependencies(javaFXModules: _*)
-                  .addArtifactTypes(Type.all)
-                  .run()
     // Return the list of libraries
     val pathRefs = files.map(f => PathRef(os.Path(f)))
     Agg(pathRefs : _*)

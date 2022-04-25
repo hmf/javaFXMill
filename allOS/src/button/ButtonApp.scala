@@ -20,8 +20,8 @@ class ButtonApp extends Application {
     stage.show()
   }
 
-  def launchIt():Unit={
-    Application.launch()
+  def launchIt(args: Array[String]):Unit={
+    Application.launch(args:_*)
   }
 
 }
