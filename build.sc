@@ -123,11 +123,7 @@ trait OpenJFX extends JavaModule {
   def validOS(artifact: String): Boolean = {
     if (supported.exists(s => artifact.contains(s))) {
       // Not a native OS Jar for this OS
-      println(s"?????????????????? => $artifact")
-      //val t = remove.exists(s => artifact.contains(s))
-      val t = artifact.contains( tag )
-      println(t)
-      t
+      artifact.contains( tag )
     } else {
       // Not a native OS Jar
       true
@@ -194,7 +190,6 @@ trait OpenJFX extends JavaModule {
     ) ++
       // add standard parameters
       Seq("-Dprism.verbose = true", "-ea")
-    println(t.mkString(";\n"))
     t
   }
 
