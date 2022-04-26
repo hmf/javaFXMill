@@ -331,9 +331,9 @@ object unmanaged extends OpenJFX with ScalaModule {
 /**
  * This module show how one can download the native OS binaries for multiple
  * operating systems. This allows one to create "fat" Jars so that the resulting
- * application is cross platform. In other words it supports multple plartforms.
- * Be aware that this signficiantly increases the applicaton's size.
- * Alterantivelly use something like Coursier to make your application available.
+ * application is cross platform. In other words it supports multiple platforms.
+ * Be aware that this significantly increases the application's size.
+ * Alternatively use something like Coursier to make your application available.
  *
  * @see https://get-coursier.io/
  *      https://github.com/coursier/coursier
@@ -394,7 +394,7 @@ object allOS extends OpenJFX with ScalaModule {
    *         ))
    * }}
    *
-   * [[coursier.core.Activation.Os]] defintion:
+   * [[coursier.core.Activation.Os]] definition:
    * OS( arch : Option[String],
    *     families : Set[String],
    *     name : Option[String],
@@ -570,9 +570,9 @@ object allOS extends OpenJFX with ScalaModule {
                               .addDependencies(deps: _*)
                               .future()
    val resLinux: Future[Resolution] =
-      resolveLinux
-        .addDependencies(deps: _*)
-        .future()
+                          resolveLinux
+                            .addDependencies(deps: _*)
+                            .future()
    val res = Future.sequence( List(resWin, resMac, resLinux) )
    val result = Await.result(res, Duration.Inf)
    val urls = result.map(_.dependencyArtifacts().map(_._3.url).toSet).reduceLeft((acc,s) => acc ++ s)
