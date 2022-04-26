@@ -1,5 +1,5 @@
 // cSpell:ignore scalalib, helloworld, coursier, Deps, unmanaged, classpath
-// cSpell:ignore javafx, controlsfx, openjfx
+// cSpell:ignore javafx, controlsfx, openjfx, Dprism
 
 import coursier.{Dependency, Module, ModuleName, Resolve}
 import mill._

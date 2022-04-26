@@ -23,12 +23,12 @@ import javafx.stage.Stage
 class HelloWorld extends Application {
 
   override def start(primaryStage: Stage) = {
-    primaryStage.setTitle("Hello un-managed Scala World!")
+    primaryStage.setTitle("Hello allOS Scala World!")
     val btn = new Button()
-    btn.setText("Say 'Hello un-managed Scala World'")
+    btn.setText("Say 'Hello allOS Scala World'")
     btn.setOnAction(new EventHandler[ActionEvent]() {
       override def handle(event: ActionEvent) = {
-        System.out.println("Hello un-managed Scala World!")
+        System.out.println("Hello allOS Scala World!")
       }
     })
 

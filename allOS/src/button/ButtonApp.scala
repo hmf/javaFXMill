@@ -10,13 +10,13 @@ class ButtonApp extends Application {
 
   override def start(stage: Stage) = {
     System.out.println("STARTED un-managed Scala!")
-    var button = new Button("Please un-managed Scala Click Me!")
+    var button = new Button("Please allOS Scala Click Me!")
     button.setOnAction(e => stage.close())
     var box = new VBox()
     box.getChildren().add(button)
     var scene = new Scene(box)
     stage.setScene(scene)
-    stage.setTitle("Just an un-managed Scala button")
+    stage.setTitle("Just an allOS Scala button")
     stage.show()
   }
 
