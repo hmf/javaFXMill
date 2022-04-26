@@ -537,7 +537,8 @@ object allOS extends OpenJFX with ScalaModule {
         .toSet
       } else Set[File]()
 
-    val allOS = filesWin ++ filesMac ++ filesLinux
+    val deps = resolvedIvyDeps().map(_.path.toIO).iterator.toSet
+    val allOS = filesWin ++ filesMac ++ filesLinux -- deps
     val files = allOS.toSeq
 
     // Return the list of libraries
